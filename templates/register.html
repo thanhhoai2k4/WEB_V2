@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block company_services %}
+
+<!-- Custom Style cho trang Auth để không ảnh hưởng trang khác -->
+<style>
+    .auth-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify_content: center;
+        background-color: #f8f9fa;
+        padding: 50px 0;
+    }
+    .auth-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        width: 100%;
+        max-width: 900px;
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .auth-banner {
+        width: 50%;
+        background: url('{% static "images/banner-image.png" %}') center/cover no-repeat;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    /* Lớp phủ tối để chữ nổi bật trên nền ảnh */
+    .auth-banner::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.4); 
+    }
+    .auth-banner-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        padding: 30px;
+    }
+    .auth-form-container {
+        width: 50%;
+        padding: 40px;
+    }
+    .nav-pills .nav-link {
+        color: #555;
+        font-weight: 600;
+        border-radius: 30px;
+        padding: 10px 25px;
+    }
+    .nav-pills .nav-link.active {
+        background-color: #000; /* Màu chủ đạo của web bạn */
+        color: #fff;
+    }
+    .form-control {
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #eee;
+        background-color: #f9f9f9;
+    }
+    .form-control:focus {
+        background-color: #fff;
+        border-color: #000;
+        box-shadow: none;
+    }
+    .btn-auth {
+        background-color: #000;
+        color: white;
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: 0.3s;
+    }
+    .btn-auth:hover {
+        background-color: #333;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .auth-banner { display: none; } /* Ẩn banner trên mobile */
+        .auth-form-container { width: 100%; padding: 20px; }
+    }
+</style>
+
+<div class="auth-container">
+    <div class="container">
+        <!-- Hiển thị thông báo lỗi/thành công từ Django -->
+        {% if messages %}
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-8">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <strong>Thông báo:</strong> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row justify-content-center">
+            <div class="auth-card">
+                
+                <!-- Cột 1: Banner Marketing -->
+                <div class="auth-banner">
+                    <div class="auth-banner-content">
+                        <h3>Welcome Back!</h3>
+                        <p>Trải nghiệm mua sắm thời thượng cùng MiniStore.</p>
+                    </div>
+                </div>
+
+                <!-- Cột 2: Form Đăng nhập / Đăng ký -->
+                <div class="auth-form-container">
+                    
+                    <!-- Tabs chuyển đổi -->
+                    <ul class="nav nav-pills mb-4 justify-content-center" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab">Đăng nhập</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-register-tab" data-bs-toggle="pill" data-bs-target="#pills-register" type="button" role="tab">Đăng ký</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="pills-tabContent">
+                        
+                        <!-- FORM ĐĂNG NHẬP -->
+                        <div class="tab-pane fade show active" id="pills-login" role="tabpanel">
+                            <form method="POST" action="{% url 'login' %}"> <!-- Cần định nghĩa url 'login' -->
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Tên đăng nhập</label>
+                                    <input type="text" name="username" class="form-control" placeholder="Nhập username" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Mật khẩu</label>
+                                    <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="rememberMe">
+                                        <label class="form-check-label small" for="rememberMe">Ghi nhớ</label>
+                                    </div>
+                                    <a href="#" class="small text-muted">Quên mật khẩu?</a>
+                                </div>
+                                <button type="submit" class="btn btn-auth">Đăng nhập ngay</button>
+                            </form>
+                        </div>
+
+                        <!-- FORM ĐĂNG KÝ -->
+                        <div class="tab-pane fade" id="pills-register" role="tabpanel">
+                            <form method="POST" action="{% url 'register' %}"> <!-- Cần định nghĩa url 'register' -->
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Tên đăng nhập *</label>
+                                    <input type="text" name="username" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Email *</label>
+                                    <input type="email" name="email" class="form-control" required>
+                                </div>
+                                <!-- Trường mở rộng cho UserProfile -->
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted">Số điện thoại (Để giao hàng) *</label>
+                                    <input type="tel" name="phone" class="form-control" placeholder="09xxx..." required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 mb-3">
+                                        <label class="form-label small text-muted">Mật khẩu *</label>
+                                        <input type="password" name="password" class="form-control" required>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <label class="form-label small text-muted">Nhập lại *</label>
+                                        <input type="password" name="re_password" class="form-control" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-auth">Tạo tài khoản</button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

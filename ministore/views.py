@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
-
+from django.contrib.auth import authenticate, login, logout
 
 def home(request):
     
@@ -44,3 +44,31 @@ def register(request):
             return redirect('register')
 
     return render(request, 'register.html')
+
+
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, f"Chào mừng {username} quay trở lại!")
+            return redirect('home') # Chuyển về trang chủ
+        else:
+            messages.error(request, "Sai tài khoản hoặc mật khẩu!")
+            
+    return redirect('login')
+
+
+# 4. Đăng xuất
+def logout_user(request):
+    logout(request)
+    messages.success(request, "Đã đăng xuất thành công.")
+    return redirect('auth')
+
+# 1. View hiển thị trang Auth (GET request)
+def auth_view(request):
+    return render(request, 'auth.html')

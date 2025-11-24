@@ -9,6 +9,8 @@ urlpatterns = [
 
 
     # register
-    path("Register", views.register, name="register"),
-    path("Login", views.login, name="login"),
+    path('auth/', views.auth_view, name='auth'),
+    path("Register/", views.register, name="register"),
+    path("Login/", views.login_view, name="login"),
+    path('logout/', views.logout_user, name='logout'),
 ]

@@ -3,6 +3,9 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 
 # --- 1. CORE: CATEGORY & PRODUCT ---
@@ -247,3 +250,45 @@ class StockLog(models.Model):
 
     def __str__(self):
         return f"{self.product.name}: {self.change_quantity} ({self.reason})"
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+
+    # Thông tin cá nhân mở rộng
+    phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="Số điện thoại")
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="Ảnh đại diện")
+    birth_date = models.DateField(null=True, blank=True, verbose_name="Ngày sinh")
+    address = models.CharField(max_length=255, blank=True, null=True, verbose_name="Địa chỉ mặc định")
+
+    # Hệ thống khách hàng thân thiết
+    loyalty_points = models.IntegerField(default=0, verbose_name="Điểm tích lũy")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Profile: {self.user.username}"
+
+
+# --- SIGNALS: TỰ ĐỘNG HÓA ---
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """
+    Ngay khi một User mới được tạo (created=True),
+    hàm này sẽ tự động tạo một UserProfile rỗng đi kèm.
+    """
+    if created:
+        UserProfile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """
+    Khi User được lưu, lưu luôn Profile để đảm bảo đồng bộ.
+    """
+    instance.profile.save()

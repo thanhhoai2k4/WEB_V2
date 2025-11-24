@@ -2,8 +2,27 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.db.models import Q # doc sach UIT de hieu ve Q
+from .models import Product
 
 def home(request):
+
+    mobile_products = Product.objects.select_related('category').filter(
+        Q(name__icontains='mobile') | Q(category__slug__icontains='mobile')
+    ).filter(is_active=True)[:4]
+
+    smart_products = Product.objects.select_related('category').filter(
+        Q(name__icontains='smart') | Q(category__slug__icontains='smart')
+    ).filter(is_active=True)[:8]
+
+    context = {
+        'mobile_products': mobile_products,
+        'smart_products': smart_products,
+    }
+
+    return render(request, 'index.html', context)
+
+
     return render(request, 'index.html')
 
 def register(request):
@@ -73,6 +92,7 @@ def login_view(request):
             return render(request, 'register.html', {'active_tab': 'login'})
             
     # GET request: Quan trọng! Phải render trang thay vì redirect loop
+    print("GET LOGIN")
     return render(request, 'register.html', {'active_tab': 'login'})
 
 def logout_user(request):

@@ -6,8 +6,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-
-
 # --- 1. CORE: CATEGORY & PRODUCT ---
 
 class Category(models.Model):
@@ -252,8 +250,7 @@ class StockLog(models.Model):
         return f"{self.product.name}: {self.change_quantity} ({self.reason})"
 
 
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+
 
 
 class UserProfile(models.Model):

@@ -8,7 +8,7 @@ def home(request):
     return render(request, 'index.html')
 
 
-def register_view(request):
+def register(request):
     if request.method == 'POST':
         # 1. Lấy dữ liệu từ form
         username = request.POST.get('username')

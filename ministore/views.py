@@ -4,50 +4,55 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 
 def home(request):
-    
     return render(request, 'index.html')
 
-
 def register(request):
+    # Nếu đã đăng nhập thì đá về trang chủ, không cho đăng ký nữa
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == 'POST':
-        # 1. Lấy dữ liệu từ form
+        # 1. Lấy dữ liệu
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
         re_password = request.POST.get('re_password')
-        phone = request.POST.get('phone')  # Dữ liệu này thuộc về Profile
+        phone = request.POST.get('phone')
 
-        # 2. Kiểm tra tính hợp lệ (Validation cơ bản)
+        # 2. Validate
         if password != re_password:
             messages.error(request, "Mật khẩu không khớp!")
-            return redirect('register')
+            return render(request, 'register.html', {'active_tab': 'register'}) # Giữ lại tab đăng ký
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "Tên đăng nhập đã tồn tại!")
-            return redirect('register')
+            return render(request, 'register.html', {'active_tab': 'register'})
 
         # 3. Tạo User
         try:
-            # Tạo user mới
             new_user = User.objects.create_user(username=username, email=email, password=password)
-
-            # 4. Cập nhật Profile (Profile đã được Signal tạo tự động rồi)
-            # Chúng ta chỉ cần lấy ra và sửa đổi
-            new_user.profile.phone_number = phone
-            new_user.profile.save()
-
+            
+            # Cập nhật Profile (Signal đã tạo profile, giờ ta update)
+            if hasattr(new_user, 'profile'):
+                new_user.profile.phone_number = phone
+                new_user.profile.save()
+            
             messages.success(request, "Đăng ký thành công! Vui lòng đăng nhập.")
-            return redirect('login')
+            # Chuyển sang tab login để người dùng nhập lại
+            return redirect('login') 
 
         except Exception as e:
             messages.error(request, f"Có lỗi xảy ra: {e}")
-            return redirect('register')
+            return render(request, 'register.html', {'active_tab': 'register'})
 
-    return render(request, 'register.html')
-
-
+    # GET request: Hiển thị form và mặc định active tab Register
+    return render(request, 'register.html', {'active_tab': 'register'})
 
 def login_view(request):
+    # Nếu đã đăng nhập thì đá về trang chủ
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -56,19 +61,25 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, f"Chào mừng {username} quay trở lại!")
-            return redirect('home') # Chuyển về trang chủ
+            
+            # Kiểm tra xem có url nào cần redirect tới không (ví dụ: đang mua hàng bị bắt đăng nhập)
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect('home')
         else:
             messages.error(request, "Sai tài khoản hoặc mật khẩu!")
+            # Render lại trang với tab login đang mở
+            return render(request, 'register.html', {'active_tab': 'login'})
             
-    return redirect('login')
+    # GET request: Quan trọng! Phải render trang thay vì redirect loop
+    return render(request, 'register.html', {'active_tab': 'login'})
 
-
-# 4. Đăng xuất
 def logout_user(request):
     logout(request)
     messages.success(request, "Đã đăng xuất thành công.")
-    return redirect('auth')
+    return redirect('login')
 
-# 1. View hiển thị trang Auth (GET request)
+# View này có thể bỏ hoặc để dùng chung
 def auth_view(request):
-    return render(request, 'auth.html')
+    return render(request, 'register.html', {'active_tab': 'login'})

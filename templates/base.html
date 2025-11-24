@@ -21,7 +21,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <!-- script
     ================================================== -->
-    <script src="{% static 'js/modernizr.js' $}"></script>
+    <script src="{% static 'js/modernizr.js' %}"></script>
   </head>
   <body data-bs-spy="scroll" data-bs-target="#navbar" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" tabindex="0">
     <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
@@ -209,12 +209,25 @@
                         </a>
                       </li>
                       <li class="pe-3">
-                        <a href="#">
-                          <svg class="user">
-                            <use xlink:href="#user"></use>
-                          </svg>
-                        </a>
-                      </li>
+                          {% if request.user.is_authenticated %}
+                            <div class="dropdown">
+                              <a href="#" class="dropdown-toggle text-dark text-decoration-none" data-bs-toggle="dropdown">
+                                <svg class="user"><use xlink:href="#user"></use></svg>
+                                <span class="ms-1 text-uppercase small">{{ request.user.username }}</span>
+                              </a>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Thông tin tài khoản</a></li> <li><a class="dropdown-item" href="#">Đơn mua</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Đăng xuất</a></li>
+                              </ul>
+                            </div>
+                          {% else %}
+                            <a href="{% url 'login' %}">
+                              <svg class="user"><use xlink:href="#user"></use></svg>
+                              <span class="ms-1 small">Login / Register</span>
+                            </a>
+                          {% endif %}
+                        </li>
                       <li>
                         <a href="cart.html">
                           <svg class="cart">

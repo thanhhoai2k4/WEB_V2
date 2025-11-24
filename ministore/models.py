@@ -1,15 +1,18 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
-# --- 1. CATEGORY (DANH MỤC) ---
+# --- 1. CORE: CATEGORY & PRODUCT ---
+
 class Category(models.Model):
     name = models.CharField(max_length=200, unique=True, verbose_name="Tên danh mục")
-    slug = models.SlugField(max_length=200, unique=True, blank=True, help_text="URL thân thiện (SEO)")
+    slug = models.SlugField(max_length=200, unique=True, blank=True, help_text="URL thân thiện cho SEO")
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children',
-                               verbose_name="Danh mục cha")
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+    is_active = models.BooleanField(default=True, help_text="Tắt danh mục này thay vì xóa nó")
 
     class Meta:
         verbose_name_plural = "Categories"
@@ -23,26 +26,24 @@ class Category(models.Model):
         return self.name
 
 
-# --- 2. PRODUCT (SẢN PHẨM) ---
 class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=255, verbose_name="Tên sản phẩm")
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     description = models.TextField(verbose_name="Mô tả chi tiết", blank=True)
 
-    # Giá tiền: Luôn dùng DecimalField để tránh lỗi làm tròn số học
+    # Pricing & Inventory
     base_price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Giá gốc")
     sale_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True,
                                      verbose_name="Giá khuyến mãi")
-
-    image = models.ImageField(upload_to='products/', verbose_name="Ảnh đại diện")
-
-    # --- ĐIỂM NHẤN CHO DÂN CÔNG NGHỆ ---
-    # Lưu thông số kỹ thuật động dạng JSON.
-    # Ví dụ: {"RAM": "8GB", "Chip": "M1", "SSD": "256GB"}
-    specifications = models.JSONField(default=dict, blank=True, verbose_name="Thông số kỹ thuật")
-
     stock = models.PositiveIntegerField(default=0, verbose_name="Tồn kho")
+
+    # Metadata
+    image = models.ImageField(upload_to='products/', verbose_name="Ảnh đại diện")
+    specifications = models.JSONField(default=dict, blank=True, verbose_name="Thông số kỹ thuật (JSON)")
+
+    # Analytics & Control
+    views_count = models.PositiveIntegerField(default=0, verbose_name="Lượt xem")
     is_active = models.BooleanField(default=True, verbose_name="Đang kinh doanh")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -52,61 +53,139 @@ class Product(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+    @property
+    def price(self):
+        """Logic: Trả về giá thấp nhất đang hiệu lực"""
+        return self.sale_price if self.sale_price and self.sale_price < self.base_price else self.base_price
+
     def __str__(self):
         return self.name
 
-    @property
-    def price(self):
-        """Trả về giá bán thực tế (ưu tiên giá sale) để hiển thị"""
-        return self.sale_price if self.sale_price else self.base_price
 
-
-# --- 3. GALLERY (BỘ SƯU TẬP ẢNH) ---
-# Hàng điện tử cần xem nhiều góc độ, 1 ảnh là không đủ.
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='products/gallery/')
-    alt_text = models.CharField(max_length=255, blank=True)
+    alt_text = models.CharField(max_length=255, blank=True, help_text="Văn bản thay thế cho SEO")
+
+
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        verbose_name="Số sao (1-5)"
+    )
+    comment = models.TextField(verbose_name="Nội dung đánh giá")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Xác thực xã hội
+    is_verified_purchase = models.BooleanField(default=False, verbose_name="Đã mua hàng thật")
 
     def __str__(self):
-        return f"Ảnh của {self.product.name}"
+        return f"{self.user.username} - {self.product.name} ({self.rating}*)"
 
 
-# --- 4. ORDER (ĐƠN HÀNG) ---
+# --- 3. USER EXPERIENCE: CART & ADDRESS (MỚI) ---
+
+class Address(models.Model):
+    """Lưu danh bạ địa chỉ của người dùng để không phải nhập lại"""
+    ADDRESS_TYPE = [('HOME', 'Nhà riêng'), ('OFFICE', 'Văn phòng')]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    full_name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20)
+    province = models.CharField(max_length=100, verbose_name="Tỉnh/Thành")
+    district = models.CharField(max_length=100, verbose_name="Quận/Huyện")
+    detailed_address = models.CharField(max_length=255, verbose_name="Số nhà, đường")
+    is_default = models.BooleanField(default=False)
+    type = models.CharField(max_length=10, choices=ADDRESS_TYPE, default='HOME')
+
+    def __str__(self):
+        return f"{self.full_name} - {self.detailed_address}"
+
+
+class Cart(models.Model):
+    """Giỏ hàng lưu DB để đồng bộ đa thiết bị"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    session_key = models.CharField(max_length=40, null=True, blank=True)  # Cho khách vãng lai
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    @property
+    def total_price(self):
+        return self.product.price * self.quantity
+
+
+# --- 4. MARKETING: COUPONS (MỚI) ---
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    discount_percentage = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
+    max_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Giảm tối đa bao nhiêu tiền")
+    valid_from = models.DateTimeField()
+    valid_to = models.DateTimeField()
+    active = models.BooleanField(default=True)
+    usage_limit = models.PositiveIntegerField(default=100, help_text="Số lần mã này được dùng")
+    used_count = models.PositiveIntegerField(default=0)
+
+    def is_valid(self):
+        now = timezone.now()
+        return self.active and self.valid_from <= now <= self.valid_to and self.used_count < self.usage_limit
+
+    def __str__(self):
+        return self.code
+
+
+# --- 5. COMMERCE: ORDERS ---
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('PENDING', 'Chờ xử lý'),
+        ('CONFIRMED', 'Đã xác nhận'),
         ('SHIPPING', 'Đang giao'),
         ('COMPLETED', 'Hoàn thành'),
         ('CANCELLED', 'Đã hủy'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    full_name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=20)
-    address = models.CharField(max_length=255)
 
-    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    # Snapshot thông tin giao hàng (Lưu cứng để không bị đổi khi user sửa Address)
+    shipping_full_name = models.CharField(max_length=100)
+    shipping_phone = models.CharField(max_length=20)
+    shipping_address = models.TextField(help_text="Địa chỉ đầy đủ tại thời điểm mua")
+
+    # Tài chính
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    # Logistics & Thanh toán
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    payment_method = models.CharField(max_length=50, default='COD')
+    is_paid = models.BooleanField(default=False)
+    tracking_number = models.CharField(max_length=50, blank=True, null=True, help_text="Mã vận đơn")
+
+    note = models.TextField(blank=True, verbose_name="Ghi chú của khách")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Order #{self.id} - {self.full_name}"
+        return f"Order #{self.id} - {self.shipping_full_name}"
 
 
-# --- 5. ORDER ITEM (CHI TIẾT ĐƠN HÀNG) ---
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     quantity = models.PositiveIntegerField(default=1)
-    price = models.DecimalField(max_digits=12, decimal_places=2, help_text="Giá tại thời điểm mua")
+    price = models.DecimalField(max_digits=12, decimal_places=2, help_text="Giá tại thời điểm chốt đơn")
 
     def save(self, *args, **kwargs):
-        # Lưu cứng giá tại thời điểm mua để tránh việc sau này giá SP thay đổi làm sai lệch báo cáo
         if not self.price and self.product:
             self.price = self.product.price
         super().save(*args, **kwargs)
-
-    @property
-    def total_price(self):
-        return self.price * self.quantity

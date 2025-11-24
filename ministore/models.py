@@ -189,3 +189,61 @@ class OrderItem(models.Model):
         if not self.price and self.product:
             self.price = self.product.price
         super().save(*args, **kwargs)
+
+
+class Transaction(models.Model):
+    """
+    Lưu vết mọi giao dịch thanh toán (Thành công lẫn Thất bại).
+    Lý do: Một đơn hàng (Order) có thể có nhiều lần thanh toán (VD: Lần 1 thẻ lỗi, Lần 2 thành công).
+    """
+    TRANSACTION_STATUS = [
+        ('PENDING', 'Đang xử lý'),
+        ('SUCCESS', 'Thành công'),
+        ('FAILED', 'Thất bại'),
+        ('REFUNDED', 'Đã hoàn tiền'),
+    ]
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='transactions')
+    transaction_id = models.CharField(max_length=100, unique=True, null=True, blank=True,
+                                      help_text="Mã giao dịch từ cổng thanh toán (VD: Stripe ID, Momo ID)")
+    payment_method = models.CharField(max_length=50, default='COD')
+    amount = models.DecimalField(max_digits=12, decimal_places=2, help_text="Số tiền giao dịch thực tế")
+    status = models.CharField(max_length=20, choices=TRANSACTION_STATUS, default='PENDING')
+
+    # Dữ liệu thô để debug (Quan trọng cho kỹ thuật)
+    raw_response = models.JSONField(default=dict, blank=True, verbose_name="Dữ liệu gốc từ cổng thanh toán")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Trans {self.transaction_id or self.id} - {self.status}"
+
+
+class StockLog(models.Model):
+    """
+    Sổ cái kho hàng: Ghi lại TẠI SAO số lượng thay đổi.
+    Giúp trả lời câu hỏi: 'Tại sao tháng này mất 5 cái áo?' (Bán hay mất trộm?)
+    """
+    REASON_CHOICES = [
+        ('IMPORT', 'Nhập kho'),
+        ('SALE', 'Bán hàng'),
+        ('RETURN', 'Khách trả hàng'),
+        ('DAMAGE', 'Hư hỏng/Mất mát'),
+        ('ADJUST', 'Kiểm kê điều chỉnh'),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='stock_logs')
+    change_quantity = models.IntegerField(help_text="Số lượng thay đổi (Âm là xuất, Dương là nhập)")
+    old_stock = models.IntegerField(help_text="Tồn kho trước khi thay đổi")
+    new_stock = models.IntegerField(help_text="Tồn kho sau khi thay đổi")
+
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES)
+    note = models.TextField(blank=True, verbose_name="Ghi chú chi tiết")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Người thực hiện (Để quy trách nhiệm)
+    performed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.product.name}: {self.change_quantity} ({self.reason})"

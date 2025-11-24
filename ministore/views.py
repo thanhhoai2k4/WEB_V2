@@ -8,13 +8,23 @@ from .models import Product
 def home(request):
 
     mobile_products = Product.objects.select_related('category').filter(
-        Q(name__icontains='mobile') | Q(category__slug__icontains='mobile')
-    ).filter(is_active=True)[:4]
+        is_active=True  # Chỉ lấy sản phẩm đang kinh doanh
+    ).filter(
+        Q(name__icontains='mobile') |
+        Q(name__icontains='phone') |
+        Q(category__slug__icontains='mobile') |
+        Q(category__slug__icontains='phone')
+    ).order_by('-created_at')[:4] # Slicing: Giới hạn 4 sản phẩm
+
 
     smart_products = Product.objects.select_related('category').filter(
-        Q(name__icontains='smart') | Q(category__slug__icontains='smart')
-    ).filter(is_active=True)[:8]
-
+        is_active=True
+    ).filter(
+        Q(name__icontains='smartwatch')|
+        Q(name__icontains='smart') |
+        Q(name__icontains='watch') |
+        Q(category__slug__icontains='smartwatch')
+    ).order_by('-created_at')[:4]
     context = {
         'mobile_products': mobile_products,
         'smart_products': smart_products,

@@ -152,7 +152,7 @@
             <div class="offcanvas-body">
               <ul id="navbar" class="navbar-nav text-uppercase justify-content-end align-items-center flex-grow-1 pe-3">
                 <li class="nav-item">
-                  <a class="nav-link me-4 active" href="#billboard">Home</a>
+                  <a class="nav-link me-4 active" href="{% url "home" %}">Home</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link me-4" href="#company-services">Services</a>
@@ -170,7 +170,7 @@
                   <a class="nav-link me-4" href="#latest-blog">Blog</a>
                 </li>
                 <li class="nav-item dropdown">
-                  <a class="nav-link me-4 dropdown-toggle link-dark" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Pages</a>
+                  <a class="nav-link me-4 dropdown-toggle link-dark" data-bs-toggle="dropdown" href="{% url "shop" %}" role="button" aria-expanded="false">Pages</a>
                   <ul class="dropdown-menu">
                     <li>
                       <a href="about.html" class="dropdown-item">About</a>
@@ -179,7 +179,7 @@
                       <a href="blog.html" class="dropdown-item">Blog</a>
                     </li>
                     <li>
-                      <a href="shop.html" class="dropdown-item">Shop</a>
+                      <a href="{% url "shop" %}" class="dropdown-item">Shop</a>
                     </li>
                     <li>
                       <a href="cart.html" class="dropdown-item">Cart</a>
@@ -216,7 +216,7 @@
                                 <span class="ms-1 text-uppercase small">{{ request.user.username }}</span>
                               </a>
                               <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Thông tin tài khoản</a></li> <li><a class="dropdown-item" href="#">Đơn mua</a></li>
+                                <li><a class="dropdown-item" href="{% url "profile" %}">Thông tin tài khoản</a></li> <li><a class="dropdown-item" href="#">Đơn mua</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Đăng xuất</a></li>
                               </ul>
@@ -229,7 +229,7 @@
                           {% endif %}
                         </li>
                       <li>
-                        <a href="cart.html">
+                        <a href="{% url "view_cart" %}">
                           <svg class="cart">
                             <use xlink:href="#cart"></use>
                           </svg>

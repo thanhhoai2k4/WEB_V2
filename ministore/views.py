@@ -1,9 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q # doc sach UIT de hieu ve Q
-from .models import Product, Category
+from .models import Product, Category, CartItem, Cart
 
 
 def home(request):
@@ -79,7 +79,6 @@ def register(request):
     return render(request, 'register.html', {'active_tab': 'register'})
 
 def login_view(request):
-    # Nếu đã đăng nhập thì đá về trang chủ
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -87,24 +86,56 @@ def login_view(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
+        # 1. Lưu lại session key của khách vãng lai TRƯỚC khi login
+        # (Vì sau khi login, Django có thể đổi session key để bảo mật)
+        anonymous_session_key = request.session.session_key
+        
         user = authenticate(request, username=username, password=password)
+        
         if user is not None:
             login(request, user)
+            
+            # --- START LOGIC GỘP GIỎ HÀNG (SÁNG TẠO) ---
+            # Ý tưởng: Tìm giỏ hàng của session cũ, gán nó cho User mới đăng nhập
+            if anonymous_session_key:
+                try:
+                    # Tìm giỏ hàng "vô chủ" của session cũ
+                    guest_cart = Cart.objects.get(session_key=anonymous_session_key, user__isnull=True)
+                    
+                    # Tìm hoặc tạo giỏ hàng của User
+                    user_cart, created = Cart.objects.get_or_create(user=user)
+                    
+                    # Chuyển từng món đồ từ Guest Cart -> User Cart
+                    for item in guest_cart.items.all():
+                        # Kiểm tra xem món này đã có trong giỏ User chưa
+                        existing_item = CartItem.objects.filter(cart=user_cart, product=item.product).first()
+                        if existing_item:
+                            existing_item.quantity += item.quantity
+                            existing_item.save()
+                        else:
+                            # Nếu chưa có thì đổi chủ sở hữu sang User Cart
+                            item.cart = user_cart
+                            item.save()
+                    
+                    # Xóa giỏ hàng tạm sau khi đã chuyển hết đồ
+                    guest_cart.delete()
+                    
+                except Cart.DoesNotExist:
+                    pass # Không có giỏ hàng tạm thì thôi
+            # --- END LOGIC ---
+
             messages.success(request, f"Chào mừng {username} quay trở lại!")
             
-            # Kiểm tra xem có url nào cần redirect tới không (ví dụ: đang mua hàng bị bắt đăng nhập)
             next_url = request.GET.get('next')
             if next_url:
                 return redirect(next_url)
             return redirect('home')
         else:
             messages.error(request, "Sai tài khoản hoặc mật khẩu!")
-            # Render lại trang với tab login đang mở
             return render(request, 'register.html', {'active_tab': 'login'})
             
-    # GET request: Quan trọng! Phải render trang thay vì redirect loop
-    print("GET LOGIN")
     return render(request, 'register.html', {'active_tab': 'login'})
+
 
 def logout_user(request):
     logout(request)
@@ -167,3 +198,134 @@ def shop(request):
         'max_price': max_price
     }
     return render(request, 'shop.html', context)
+
+
+
+def product_detail(request, slug):
+    product = get_object_or_404(Product, slug=slug, is_active=True)
+
+    # 3. Tăng lượt xem (Optional - Sáng tạo thêm)
+    # Logic: Mỗi khi có người vào xem, ta tăng biến đếm này lên. 
+    # Giúp bạn thống kê được sản phẩm nào đang "hot".
+    product.views_count += 1
+    product.save()
+
+    context = {
+        'product': product,
+    }
+    return render(request, 'single-product.html', context)
+
+
+
+
+
+
+
+def _get_cart(request):
+    """
+    Hàm bổ trợ (Private helper): Lấy hoặc tạo giỏ hàng dựa trên trạng thái đăng nhập.
+    Đây là cốt lõi của việc phân định "Lưu" hay "Không lưu" (tạm thời).
+    """
+    if request.user.is_authenticated:
+        # Nếu đã đăng nhập: Lấy giỏ hàng theo User (Lưu vĩnh viễn)
+        cart, created = Cart.objects.get_or_create(user=request.user)
+    else:
+        # Nếu chưa đăng nhập: Lấy giỏ hàng theo Session (Lưu tạm thời)
+        if not request.session.session_key:
+            request.session.create()
+        
+        session_key = request.session.session_key
+        cart, created = Cart.objects.get_or_create(
+            session_key=session_key, 
+            defaults={'user': None}
+        )
+    return cart
+
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    cart = _get_cart(request)
+
+    # Kiểm tra xem sản phẩm đã có trong giỏ chưa
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+    
+    if not created:
+        # Nếu có rồi thì tăng số lượng
+        cart_item.quantity += 1
+        cart_item.save()
+        messages.info(request, "Đã cập nhật số lượng sản phẩm!")
+    else:
+        messages.success(request, "Đã thêm vào giỏ hàng!")
+    
+    return redirect('view_cart')
+
+def view_cart(request):
+    cart = _get_cart(request)
+    items = cart.items.select_related('product').all()
+    
+    # Tính tổng tiền (Sử dụng Python để tính property total_price trong model)
+    total_bill = sum(item.total_price for item in items)
+    
+    context = {
+        'cart_items': items,
+        'total_bill': total_bill
+    }
+    return render(request, 'cart.html', context)
+
+def remove_from_cart(request, item_id):
+    cart = _get_cart(request)
+    item = get_object_or_404(CartItem, id=item_id, cart=cart)
+    item.delete()
+    messages.success(request, "Đã xóa sản phẩm khỏi giỏ hàng.")
+    return redirect('view_cart')
+
+def update_cart_item(request, item_id):
+    """Cập nhật số lượng trực tiếp từ trang giỏ hàng"""
+    if request.method == 'POST':
+        cart = _get_cart(request)
+        item = get_object_or_404(CartItem, id=item_id, cart=cart)
+        action = request.POST.get('action')
+        
+        if action == 'increase':
+            item.quantity += 1
+        elif action == 'decrease':
+            item.quantity -= 1
+            
+        if item.quantity <= 0:
+            item.delete()
+        else:
+            item.save()
+            
+    return redirect('view_cart')
+
+from .forms import UserUpdateForm, ProfileUpdateForm
+from django.contrib.auth.decorators import login_required
+
+@login_required # Bắt buộc phải đăng nhập mới vào được trang này
+def profile(request):
+    if request.method == 'POST':
+        # 1. Nạp dữ liệu từ POST vào Form
+        # instance=request.user: Bảo Django là ta đang UPDATE user này, không phải tạo mới
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        
+        # request.FILES: Quan trọng! Để nhận file ảnh upload lên
+        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
+        # 2. Kiểm tra hợp lệ cả 2 form
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, 'Hồ sơ của bạn đã được cập nhật thành công!')
+            # Redirect để tránh lỗi "Resubmit Form" khi F5
+            return redirect('profile')
+
+    else:
+        # GET request: Tạo form với dữ liệu cũ điền sẵn
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = ProfileUpdateForm(instance=request.user.profile)
+
+    context = {
+        'u_form': u_form,
+        'p_form': p_form
+    }
+
+    return render(request, 'profile.html', context)

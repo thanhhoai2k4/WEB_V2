@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block mobile_products %} <div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'shop' %}">Cửa hàng</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}" style="width: 100%; object-fit: cover;">
+                {% else %}
+                <img src="{% static 'images/product-item1.jpg' %}" class="img-fluid rounded" alt="No Image">
+                {% endif %}
+            </div>
+            
+            <div class="row mt-3">
+                {% for img in product.images.all %}
+                <div class="col-3">
+                    <img src="{{ img.image.url }}" class="img-thumbnail" style="cursor: pointer;">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h1 class="fw-bold">{{ product.name }}</h1>
+            
+            <div class="mb-3">
+                <span class="badge bg-success">Còn hàng: {{ product.stock }}</span>
+                <span class="text-muted ms-2"><i class="fa fa-eye"></i> {{ product.views_count }} lượt xem</span>
+            </div>
+
+            <div class="fs-4 mb-4">
+                {% if product.sale_price and product.sale_price < product.base_price %}
+                    <span class="text-danger fw-bold">{{ product.sale_price|floatformat:0 }} đ</span>
+                    <span class="text-muted text-decoration-line-through fs-6 ms-2">{{ product.base_price|floatformat:0 }} đ</span>
+                {% else %}
+                    <span class="fw-bold">{{ product.base_price|floatformat:0 }} đ</span>
+                {% endif %}
+            </div>
+
+            <p class="lead">{{ product.description|linebreaks }}</p>
+
+            <div class="d-flex gap-2 mb-4">
+                <input type="number" class="form-control" value="1" min="1" max="{{ product.stock }}" style="width: 80px;">
+                <button class="btn btn-primary flex-grow-1">
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary">
+                        <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+                    </a>
+                </button>
+            </div>
+
+            {% if product.specifications %}
+            <div class="card mt-4">
+                <div class="card-header bg-light fw-bold">Thông số kỹ thuật</div>
+                <ul class="list-group list-group-flush">
+                    {% for key, value in product.specifications.items %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="text-muted">{{ key }}</span>
+                        <span class="fw-bold">{{ value }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <form action="#" method="POST"> {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                
+                <div class="d-flex align-items-center gap-3 mb-4 mt-4">
+                    <div class="input-group" style="width: 130px;">
+                        <span class="input-group-text bg-white">Qty</span>
+                        <input type="number" 
+                            name="quantity" 
+                            class="form-control text-center" 
+                            value="1" 
+                            min="1" 
+                            max="{{ product.stock }}" 
+                            aria-label="Quantity">
+                    </div>
+
+                    <button type="submit" name="action" value="add_to_cart" class="btn btn-outline-primary flex-grow-1 py-2">
+                        <i class="fa fa-shopping-cart me-2"></i> Add to Cart
+                    </button>
+
+                    <button type="submit" name="action" value="buy_now" class="btn btn-danger flex-grow-1 py-2 fw-bold shadow-sm">
+                        Buy Now
+                    </button>
+                </div>
+            </form>
+            </div>
+            {% endif %}
+        </div>
+
+        
+
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="border-bottom pb-2">Đánh giá từ khách hàng</h3>
+            {% for review in product.reviews.all %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-title fw-bold">{{ review.user.username }} - <span class="text-warning">{{ review.rating }} sao</span></h6>
+                    <p class="card-text">{{ review.comment }}</p>
+                    <small class="text-muted">{{ review.created_at|date:"d/m/Y" }}</small>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

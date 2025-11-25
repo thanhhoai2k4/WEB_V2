@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- CỘT TRÁI: THẺ THÔNG TIN -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-0 text-center p-4">
+                <div class="mb-3 position-relative d-inline-block mx-auto">
+                    <!-- Logic hiển thị Avatar: Nếu có ảnh thì hiện, không có thì hiện ảnh mặc định -->
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" class="rounded-circle img-thumbnail" 
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=0D6EFD&color=fff&size=150" 
+                             class="rounded-circle img-thumbnail" alt="Default Avatar">
+                    {% endif %}
+                </div>
+                
+                <h4 class="mb-0">{{ user.first_name }} {{ user.last_name }}</h4>
+                <p class="text-muted">@{{ user.username }}</p>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-outline-primary btn-sm">Đổi mật khẩu</button>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">Đăng xuất</a>
+                </div>
+
+                <hr>
+                
+                <div class="text-start">
+                    <p class="small text-muted mb-1"><i class="bi bi-envelope"></i> Email:</p>
+                    <p class="fw-bold">{{ user.email }}</p>
+                    
+                    <p class="small text-muted mb-1"><i class="bi bi-telephone"></i> Điện thoại:</p>
+                    <p class="fw-bold">{{ user.profile.phone_number|default:"Chưa cập nhật" }}</p>
+
+                    <p class="small text-muted mb-1"><i class="bi bi-geo-alt"></i> Địa chỉ:</p>
+                    <p class="fw-bold">{{ user.profile.address|default:"Chưa cập nhật" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CỘT PHẢI: FORM CHỈNH SỬA -->
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-gear"></i> Cập nhật thông tin</h5>
+                </div>
+                <div class="card-body p-4">
+                    <!-- enctype="multipart/form-data" LÀ BẮT BUỘC để upload ảnh -->
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <h6 class="text-primary mb-3">Thông tin tài khoản</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Họ đệm</label>
+                                {{ u_form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tên</label>
+                                {{ u_form.last_name }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Email</label>
+                                {{ u_form.email }}
+                            </div>
+                        </div>
+
+                        <hr class="text-muted opacity-25">
+
+                        <h6 class="text-primary mb-3">Thông tin cá nhân</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại</label>
+                                {{ p_form.phone_number }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày sinh</label>
+                                {{ p_form.birth_date }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Địa chỉ</label>
+                                {{ p_form.address }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Ảnh đại diện</label>
+                                {{ p_form.avatar }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -264,16 +264,16 @@
                   <a class="nav-link me-4" href="#yearly-sale">Sale</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link me-4" href="#latest-blog">Blog</a>
+                  <a class="nav-link me-4" href="{%  url "blog_list" %}">Blog</a>
                 </li>
                 <li class="nav-item dropdown">
                   <a class="nav-link me-4 dropdown-toggle link-dark" data-bs-toggle="dropdown" href="{% url "shop" %}" role="button" aria-expanded="false">Pages</a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="about.html" class="dropdown-item">About</a>
+                      <a href="{% url "about" %}" class="dropdown-item">About</a>
                     </li>
                     <li>
-                      <a href="blog.html" class="dropdown-item">Blog</a>
+                      <a href="{% url "blog_list" %}" class="dropdown-item">Blog</a>
                     </li>
                     <li>
                       <a href="{% url "shop" %}" class="dropdown-item">Shop</a>
@@ -583,13 +583,13 @@
                       <a href="#">Home</a>
                     </li>
                     <li class="menu-item pb-2">
-                      <a href="#">About</a>
+                      <a href="{% url "about" %}">About</a>
                     </li>
                     <li class="menu-item pb-2">
                       <a href="#">Shop</a>
                     </li>
                     <li class="menu-item pb-2">
-                      <a href="#">Blogs</a>
+                      <a href="{% url "blog_list" %}">Blogs</a>
                     </li>
                     <li class="menu-item pb-2">
                       <a href="#">Contact</a>

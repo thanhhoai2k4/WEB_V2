@@ -8,7 +8,7 @@ from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.http import JsonResponse
-
+from django.db.models.functions import Coalesce
 
 def home(request):
 
@@ -156,14 +156,17 @@ def auth_view(request):
 
 def shop(request):
     # 1. Lấy dữ liệu gốc
-    products = Product.objects.all()
+    # products = Product.objects.all()
+    products = Product.objects.filter(is_active=True).annotate(
+        current_price=Coalesce('sale_price', 'base_price')
+    )
     categories = Category.objects.all()
 
     # 2. Lấy tham số từ URL (Method GET)
     category_slug = request.GET.get('category',"") 
     search_query = request.GET.get('q', "")
     min_price = request.GET.get('min_price',"")
-    max_price = request.GET.get('max_price',)
+    max_price = request.GET.get('max_price',"")
 
     # 3. Áp dụng bộ lọc (Logic lọc tuần tự)
     
@@ -174,23 +177,24 @@ def shop(request):
     # Lọc theo từ khóa tìm kiếm (Tìm trong tên hoặc mô tả)
     if search_query:
         products = products.filter(
-            Q(title__icontains=search_query) | 
+            Q(name__icontains=search_query) | 
             Q(description__icontains=search_query)
         )
-
-    # Lọc theo giá tối thiểu
+    # Lọc theo giá (Bây giờ ta có thể dùng current_price đã annotate)
     if min_price:
         try:
-            products = products.filter(price__gte=min_price) # gte: greater than or equal
+            products = products.filter(current_price__gte=float(min_price))
         except ValueError:
-            pass # Bỏ qua nếu người dùng nhập linh tinh không phải số
+            pass # Bỏ qua nếu user nhập chữ
 
-    # Lọc theo giá tối đa
     if max_price:
         try:
-            products = products.filter(price__lte=max_price) # lte: less than or equal
+            products = products.filter(current_price__lte=float(max_price))
         except ValueError:
             pass
+    
+
+    
 
     context = {
         'products': products,

@@ -9,6 +9,10 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.db.models.functions import Coalesce
+from django.core.paginator import Paginator, EmptyPage
+# PageNotAnIntege
+
+
 
 def home(request):
 
@@ -193,8 +197,9 @@ def shop(request):
         except ValueError:
             pass
     
-
-    
+    paginator = Paginator(products, 6)  # Hiển thị 6 sản phẩm mỗi trang
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
         'products': products,

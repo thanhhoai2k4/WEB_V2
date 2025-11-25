@@ -327,19 +327,18 @@
                         </li>
                       
                         <li class="d-flex justify-content-between align-items-center position-relative">
-                          <a href="{% url 'view_cart' %}" class="cart position-relative d-inline-flex" aria-label="View your shopping cart">
-                            <svg class="cart-icon" width="24" height="24" viewBox="0 0 24 24">
-                              <use xlink:href="#cart"></use>
-                            </svg>
-                              <span class="ms-1 small">2</span>
-                              {{ cartItems }}
-                            {% if cartItems > 0 %}
-                              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                                style="font-size: 0.7rem; padding: 0.25em 0.5em;">
-                            {{ cartItems }}
-                            </span>
-                            {% endif %}
-                            </a>
+                            <a href="{% url 'view_cart' %}" class="cart position-relative d-inline-flex" aria-label="View your shopping cart">
+                                <svg class="cart-icon" width="24" height="24" viewBox="0 0 24 24">
+                                    <use xlink:href="#cart"></use>
+                                </svg>
+                                
+                                {% if cart_quantity > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                                      style="font-size: 0.7rem; padding: 0.25em 0.5em;">
+                                    {{ cart_quantity }}
+                                </span>
+                                {% endif %}
+                                </a>
                         </li>
 
 

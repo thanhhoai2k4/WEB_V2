@@ -63,6 +63,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "ministore.context_processors.cart_info",
             ],
         },
         'DIRS': [os.path.join(BASE_DIR, 'templates')]

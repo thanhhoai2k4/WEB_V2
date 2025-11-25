@@ -163,13 +163,13 @@ def shop(request):
     category_slug = request.GET.get('category',"") 
     search_query = request.GET.get('q', "")
     min_price = request.GET.get('min_price',"")
-    max_price = request.GET.get('max_price',"")
+    max_price = request.GET.get('max_price',)
 
     # 3. Áp dụng bộ lọc (Logic lọc tuần tự)
     
     # Lọc theo danh mục
     if category_slug:
-        products = products.filter(category__slug=category_slug)
+        products = products.filter(category__slug__icontains=category_slug, is_active=True)
 
     # Lọc theo từ khóa tìm kiếm (Tìm trong tên hoặc mô tả)
     if search_query:

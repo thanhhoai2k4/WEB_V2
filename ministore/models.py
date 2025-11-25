@@ -295,3 +295,23 @@ def save_user_profile(sender, instance, **kwargs):
     except AttributeError:
         # Dự phòng cho các lỗi thuộc tính khác
         pass
+
+
+
+
+class Post(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Tiêu đề")
+    slug = models.SlugField(max_length=200, unique=True, blank=True)
+    image = models.ImageField(upload_to='blog/', verbose_name="Ảnh bìa")
+    content = models.TextField(verbose_name="Nội dung bài viết")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Tác giả")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tạo")
+
+    def save(self, *args, **kwargs):
+        # Tự động tạo slug từ tiêu đề nếu chưa có
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title

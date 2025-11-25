@@ -17,7 +17,6 @@ class UserAdmin(BaseUserAdmin):
 # 3. Hủy đăng ký User cũ và đăng ký User mới
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
-
 admin.site.register(Category)
 admin.site.register(Product)
 admin.site.register(ProductImage)

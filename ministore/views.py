@@ -350,3 +350,35 @@ class ChangePasswordView(SuccessMessageMixin, PasswordChangeView):
 
 def about(request):
     return render(request, 'about.html')
+
+
+
+
+# Import thêm Model Post
+from .models import Post 
+
+def blog_list(request):
+    """Hiển thị danh sách tất cả bài viết"""
+    posts = Post.objects.all().order_by('-created_at') # Bài mới nhất lên đầu
+    return render(request, 'blog.html', {'posts': posts})
+
+def blog_detail(request, slug):
+    """Hiển thị nội dung chi tiết một bài viết"""
+    post = get_object_or_404(Post, slug=slug)
+    return render(request, 'blog_detail.html', {'post': post})
+
+
+
+def search(request):
+    query = request.GET.get('q', '') # if exist get 's', else empty string
+    results = []
+    if query:
+        results = Product.objects.filter(
+            Q(title__icontains=query) | 
+            Q(description__icontains=query)
+        )
+    context = {
+        'query': query,
+        'results': results
+    }
+    return redirect(request, 'search_results.html', context)

@@ -29,6 +29,15 @@ urlpatterns = [
     path('password-change/', views.ChangePasswordView.as_view(), name='password_change'),
 
 
-    path('about/', views.about, name='about')
+    path('about/', views.about, name='about'),
+
+
+
+    path('blog/', views.blog_list, name='blog_list'),
+    path('blog/<slug:slug>/', views.blog_detail, name='blog_detail'),
+
+
+
+    path("search/", views.search, name="search"),
 ]
 

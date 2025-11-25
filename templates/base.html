@@ -97,9 +97,18 @@
     <div class="search-popup">
         <div class="search-popup-container">
 
-          <form role="search" method="get" class="search-form" action="">
-            <input type="search" id="search-form" class="search-field" placeholder="Type and press enter" value="" name="s" />
-            <button type="submit" class="search-submit"><svg class="search"><use xlink:href="#search"></use></svg></button>
+          <form role="search" method="get" class="search-form" action="{% url 'shop' %}">
+          <input 
+              type="search" 
+              id="search-form" 
+              class="search-field" 
+              placeholder="Tìm kiếm sản phẩm..." 
+              value="{{ search_query|default:'' }}" 
+              name="q" 
+            />
+          <button type="submit" class="search-submit">
+              <svg class="search"><use xlink:href="#search"></use></svg>
+          </button>
           </form>
 
           <h5 class="cat-list-title">Browse Categories</h5>
@@ -216,7 +225,7 @@
                                 <span class="ms-1 text-uppercase small">{{ request.user.username }}</span>
                               </a>
                               <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url "profile" %}">Thông tin tài khoản</a></li> <li><a class="dropdown-item" href="{% url "view_cart" %}">Đơn mua</a></li>
+                                <li><a class="dropdown-item" href="{% url "profile" %}">Thông tin tài khoản</a></li> <li><a class="dropdown-item" href="#">Đơn mua</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Đăng xuất</a></li>
                               </ul>
@@ -250,9 +259,6 @@
         {% endblock %}</div>
 
     <div>{% block company_services %}
-        {% endblock %}</div>
-
-    <div>{% block content %}
         {% endblock %}</div>
 
     <div>{% block mobile_products %}

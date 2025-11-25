@@ -216,7 +216,7 @@
                                 <span class="ms-1 text-uppercase small">{{ request.user.username }}</span>
                               </a>
                               <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url "profile" %}">Thông tin tài khoản</a></li> <li><a class="dropdown-item" href="#">Đơn mua</a></li>
+                                <li><a class="dropdown-item" href="{% url "profile" %}">Thông tin tài khoản</a></li> <li><a class="dropdown-item" href="{% url "view_cart" %}">Đơn mua</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Đăng xuất</a></li>
                               </ul>
@@ -250,6 +250,9 @@
         {% endblock %}</div>
 
     <div>{% block company_services %}
+        {% endblock %}</div>
+
+    <div>{% block content %}
         {% endblock %}</div>
 
     <div>{% block mobile_products %}

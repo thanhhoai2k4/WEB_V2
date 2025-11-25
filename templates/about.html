@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid bg-light py-5 mb-5">
+    <div class="container text-center py-5">
+        <h1 class="display-4 fw-bold mb-3">Về MiniStore</h1>
+        <p class="lead text-muted mb-0">Nơi công nghệ gặp gỡ đam mê. Chúng tôi mang đến những thiết bị thông minh tốt nhất cho cuộc sống của bạn.</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6 order-md-2">
+            <img src="{% static 'images/post-item1.jpg' %}" class="img-fluid rounded shadow-sm" alt="Our Story">
+        </div>
+        <div class="col-md-6 order-md-1">
+            <h2 class="fw-bold mb-4">Câu Chuyện Của Chúng Tôi</h2>
+            <p class="text-muted">
+                Được thành lập vào năm 2024 bởi những người trẻ đam mê công nghệ, MiniStore bắt đầu với một sứ mệnh đơn giản: 
+                <strong>"Làm cho công nghệ cao cấp trở nên dễ tiếp cận hơn"</strong>.
+            </p>
+            <p class="text-muted">
+                Chúng tôi hiểu rằng một chiếc điện thoại hay đồng hồ thông minh không chỉ là thiết bị, mà là người bạn đồng hành trong công việc và cuộc sống. 
+                Tại MiniStore, mỗi sản phẩm bán ra đều trải qua quy trình kiểm tra nghiêm ngặt về chất lượng (Quality Control) để đảm bảo trải nghiệm tốt nhất cho khách hàng.
+            </p>
+            <div class="mt-4">
+                <a href="{% url 'shop' %}" class="btn btn-primary px-4 py-2">Xem sản phẩm</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row text-center mb-5 mt-5">
+        <div class="col-12 mb-4">
+            <h2 class="fw-bold">Giá Trị Cốt Lõi</h2>
+            <p class="text-muted">Điều gì khiến MiniStore khác biệt?</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm py-4">
+                <div class="card-body">
+                    <div class="mb-3 text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-shield-check" viewBox="0 0 16 16">
+                            <path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.118.265 7.31 0 8 0s1.882.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/>
+                            <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                        </svg>
+                    </div>
+                    <h5 class="card-title fw-bold">100% Chính Hãng</h5>
+                    <p class="card-text text-muted small">Cam kết sản phẩm nguyên seal, đầy đủ nguồn gốc xuất xứ và hóa đơn.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm py-4">
+                <div class="card-body">
+                    <div class="mb-3 text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-gear-wide-connected" viewBox="0 0 16 16">
+                            <path d="M7.068.727c.243-.97 1.62-.97 1.864 0l.071.286a.96.96 0 0 0 1.622.434l.205-.211c.695-.719 1.888-.03 1.613.931l-.08.284a.96.96 0 0 0 1.187 1.187l.284-.081c.96-.275 1.65.918.931 1.613l-.211.205a.96.96 0 0 0 .434 1.622l.286.071c.97.243.97 1.62 0 1.864l-.286.071a.96.96 0 0 0-.434 1.622l.211.205c.719.695.03 1.888-.931 1.613l-.284-.08a.96.96 0 0 0-1.187 1.187l.081.284c.275.96-.918 1.65-1.613.931l-.205-.211a.96.96 0 0 0-1.622.434l-.071.286c-.243.97-1.62.97-1.864 0l-.071-.286a.96.96 0 0 0-1.622-.434l-.205.211c-.695.719-1.888.03-1.613-.931l.08-.284a.96.96 0 0 0-1.187-1.187l-.284.081c-.96.275-1.65-.918-.931-1.613l.211-.205a.96.96 0 0 0-.434-1.622l-.286-.071c-.97-.243-.97-1.62 0-1.864l.286-.071a.96.96 0 0 0 .434-1.622l-.211-.205c-.719-.695-.03-1.888.931-1.613l.284.08a.96.96 0 0 0 1.187-1.187l-.081-.284c-.275-.96.918-1.65 1.613-.931l.205.211a.96.96 0 0 0 1.622-.434l.071-.286zM12.973 8.5H8.25l-2.834 3.779A4.998 4.998 0 0 0 12.973 8.5zm0-1a4.998 4.998 0 0 0-5.457-3.779l2.834 3.779h2.623zM5.048 3.967c-.03.021-.058.043-.087.065l.087-.065zm-.431.355A4.984 4.984 0 0 0 3.002 8c0 1.455.622 2.765 1.615 3.678L7.375 8 4.617 4.322zm.344 7.646.087.065-.087-.065z"/>
+                        </svg>
+                    </div>
+                    <h5 class="card-title fw-bold">Bảo Hành Vàng</h5>
+                    <p class="card-text text-muted small">Chính sách bảo hành 12 tháng, lỗi 1 đổi 1 trong 30 ngày đầu tiên.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm py-4">
+                <div class="card-body">
+                    <div class="mb-3 text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
+                            <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5z"/>
+                        </svg>
+                    </div>
+                    <h5 class="card-title fw-bold">Hỗ Trợ 24/7</h5>
+                    <p class="card-text text-muted small">Đội ngũ kỹ thuật viên luôn sẵn sàng hỗ trợ bạn cài đặt và sử dụng.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bg-light rounded p-5 text-center">
+        <div class="col-md-3 col-6 mb-3">
+            <h2 class="display-6 fw-bold text-primary">2+</h2>
+            <p class="text-uppercase small fw-bold">Năm hoạt động</p>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <h2 class="display-6 fw-bold text-primary">1000+</h2>
+            <p class="text-uppercase small fw-bold">Khách hàng</p>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <h2 class="display-6 fw-bold text-primary">50+</h2>
+            <p class="text-uppercase small fw-bold">Sản phẩm</p>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <h2 class="display-6 fw-bold text-primary">4.9*</h2>
+            <p class="text-uppercase small fw-bold">Đánh giá</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

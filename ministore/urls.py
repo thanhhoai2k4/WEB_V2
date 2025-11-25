@@ -24,5 +24,11 @@ urlpatterns = [
 
     # profile
     path('profile/', views.profile, name='profile'),
+
+    # change password
+    path('password-change/', views.ChangePasswordView.as_view(), name='password_change'),
+
+
+    path('about/', views.about, name='about')
 ]
 

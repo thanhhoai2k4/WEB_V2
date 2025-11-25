@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.exceptions import ObjectDoesNotExist
 
 # --- 1. CORE: CATEGORY & PRODUCT ---
 
@@ -285,7 +286,12 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    """
-    Khi User được lưu, lưu luôn Profile để đảm bảo đồng bộ.
-    """
-    instance.profile.save()
+    try:
+        # Chỉ lưu nếu profile đã tồn tại
+        instance.profile.save()
+    except ObjectDoesNotExist:
+        # Nếu chưa có profile (đang trong quá trình tạo), thì bỏ qua, không báo lỗi
+        pass
+    except AttributeError:
+        # Dự phòng cho các lỗi thuộc tính khác
+        pass

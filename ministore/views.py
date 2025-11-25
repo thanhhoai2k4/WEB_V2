@@ -4,6 +4,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q # doc sach UIT de hieu ve Q
 from .models import Product, Category, CartItem, Cart
+from django.contrib.auth.views import PasswordChangeView
+from django.contrib.messages.views import SuccessMessageMixin
+from django.urls import reverse_lazy
+
 
 
 def home(request):
@@ -300,32 +304,49 @@ def update_cart_item(request, item_id):
 from .forms import UserUpdateForm, ProfileUpdateForm
 from django.contrib.auth.decorators import login_required
 
-@login_required # Bắt buộc phải đăng nhập mới vào được trang này
+
+@login_required
 def profile(request):
+    # --- PHẦN 1: XỬ LÝ FORM CẬP NHẬT ---
     if request.method == 'POST':
-        # 1. Nạp dữ liệu từ POST vào Form
-        # instance=request.user: Bảo Django là ta đang UPDATE user này, không phải tạo mới
         u_form = UserUpdateForm(request.POST, instance=request.user)
-        
-        # request.FILES: Quan trọng! Để nhận file ảnh upload lên
         p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
 
-        # 2. Kiểm tra hợp lệ cả 2 form
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
             p_form.save()
             messages.success(request, 'Hồ sơ của bạn đã được cập nhật thành công!')
-            # Redirect để tránh lỗi "Resubmit Form" khi F5
-            return redirect('profile')
-
+            return redirect('profile') # Post-Redirect-Get pattern
     else:
-        # GET request: Tạo form với dữ liệu cũ điền sẵn
         u_form = UserUpdateForm(instance=request.user)
         p_form = ProfileUpdateForm(instance=request.user.profile)
 
+    # --- PHẦN 2 (THÊM MỚI): LẤY DỮ LIỆU GIỎ HÀNG ---
+    # Sử dụng hàm helper _get_cart bạn đã viết ở trên
+    cart = _get_cart(request) 
+    
+    # Lấy các item trong giỏ, dùng select_related để tối ưu truy vấn SQL
+    cart_items = cart.items.select_related('product').all()
+    
+    # Tính tổng tiền (Reuse logic từ view_cart)
+    total_bill = sum(item.total_price for item in cart_items)
+
     context = {
         'u_form': u_form,
-        'p_form': p_form
+        'p_form': p_form,
+        'cart_items': cart_items, # Truyền giỏ hàng sang template
+        'total_bill': total_bill, # Truyền tổng tiền
     }
 
     return render(request, 'profile.html', context)
+
+
+
+class ChangePasswordView(SuccessMessageMixin, PasswordChangeView):
+    template_name = 'change_password.html' # File HTML giao diện
+    success_message = "Đổi mật khẩu thành công!" # Thông báo khi xong
+    success_url = reverse_lazy('profile') # Đổi xong thì quay về trang Profile
+
+
+def about(request):
+    return render(request, 'about.html')

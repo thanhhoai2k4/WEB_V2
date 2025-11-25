@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q # doc sach UIT de hieu ve Q
-from .models import Product
+from .models import Product, Category
+
 
 def home(request):
 
@@ -113,3 +114,56 @@ def logout_user(request):
 # View này có thể bỏ hoặc để dùng chung
 def auth_view(request):
     return render(request, 'register.html', {'active_tab': 'login'})
+
+
+
+
+
+def shop(request):
+    # 1. Lấy dữ liệu gốc
+    products = Product.objects.all()
+    categories = Category.objects.all()
+
+    # 2. Lấy tham số từ URL (Method GET)
+    category_slug = request.GET.get('category')
+    search_query = request.GET.get('q')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+
+    # 3. Áp dụng bộ lọc (Logic lọc tuần tự)
+    
+    # Lọc theo danh mục
+    if category_slug:
+        products = products.filter(category__slug=category_slug)
+
+    # Lọc theo từ khóa tìm kiếm (Tìm trong tên hoặc mô tả)
+    if search_query:
+        products = products.filter(
+            Q(title__icontains=search_query) | 
+            Q(description__icontains=search_query)
+        )
+
+    # Lọc theo giá tối thiểu
+    if min_price:
+        try:
+            products = products.filter(price__gte=min_price) # gte: greater than or equal
+        except ValueError:
+            pass # Bỏ qua nếu người dùng nhập linh tinh không phải số
+
+    # Lọc theo giá tối đa
+    if max_price:
+        try:
+            products = products.filter(price__lte=max_price) # lte: less than or equal
+        except ValueError:
+            pass
+
+    context = {
+        'products': products,
+        'categories': categories,
+        # Trả lại các giá trị đã lọc để giữ lại trên form sau khi reload
+        'current_category': category_slug,
+        'search_query': search_query,
+        'min_price': min_price, 
+        'max_price': max_price
+    }
+    return render(request, 'shop.html', context)

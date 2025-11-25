@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block mobile_products %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Bộ lọc tìm kiếm</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{% url 'shop' %}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Tên sản phẩm</label>
+                            <input type="text" name="q" class="form-control" placeholder="Ví dụ: iPhone..." value="{{ search_query|default:'' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Danh mục</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="category" id="cat_all" value="" {% if not current_category %}checked{% endif %}>
+                                <label class="form-check-label" for="cat_all">Tất cả</label>
+                            </div>
+                            {% for cat in categories %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="category" id="cat_{{ cat.id }}" value="{{ cat.slug }}" {% if current_category == cat.slug %}checked{% endif %}>
+                                <label class="form-check-label" for="cat_{{ cat.id }}">{{ cat.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Khoảng giá (VNĐ)</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="min_price" class="form-control form-control-sm" placeholder="Từ" value="{{ min_price|default:'' }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="max_price" class="form-control form-control-sm" placeholder="Đến" value="{{ max_price|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Áp dụng lọc</button>
+                        <a href="{% url 'shop' %}" class="btn btn-outline-secondary w-100 mt-2">Xóa bộ lọc</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <h3 class="mb-4">Danh sách sản phẩm</h3>
+            
+            {% if products %}
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for product in products %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm product-card">
+                        {% if product.image %}
+                        <div style="height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
+                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.title }}" style="max-height: 100%; width: auto;">
+                        </div>
+                        {% else %}
+                        <img src="{% static 'images/product-item1.jpg' %}" class="card-img-top" alt="No Image">
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate">{{ product.title }}</h5>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                {% if product.discount_price %}
+                                    <div>
+                                        <span class="text-danger fw-bold">{{ product.discount_price }} đ</span>
+                                        <br>
+                                        <small class="text-muted text-decoration-line-through">{{ product.price }} đ</small>
+                                    </div>
+                                {% else %}
+                                    <span class="fw-bold">{{ product.price }} đ</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-top-0 d-grid">
+                            <a href="#" class="btn btn-outline-primary">Xem chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+                <div class="alert alert-warning text-center">
+                    Không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

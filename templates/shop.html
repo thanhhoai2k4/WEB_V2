@@ -67,9 +67,10 @@
                         {% endif %}
                         
                         <div class="card-body">
-                            <h5 class="card-title text-truncate">{{ product.title }}</h5>
-                            
-                            <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title text-truncate mb-2" title="{{ product.name }}">
+                                {{ product.name }}
+                            </h5>
+                            <div class="align-items-center">
                                 {% if product.discount_price %}
                                     <div>
                                         <span class="text-danger fw-bold">{{ product.discount_price }} đ</span>
@@ -79,6 +80,13 @@
                                 {% else %}
                                     <span class="fw-bold">{{ product.price }} đ</span>
                                 {% endif %}
+                                     
+                                
+                            </div>
+                            <div class="mt-2">
+                                <span class="fw-bold"> Trả góp 0% - 0đ phụ thu - 0đ trả trước - kỳ hạn đến 12 tháng</span>
+                               
+                                <br>
                             </div>
                         </div>
                         <div class="card-footer bg-white border-top-0 d-grid">

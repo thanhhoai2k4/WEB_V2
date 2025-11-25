@@ -37,7 +37,7 @@ urlpatterns = [
     path('blog/<slug:slug>/', views.blog_detail, name='blog_detail'),
 
 
-
-    path("search/", views.search, name="search"),
+    path('search-suggestions/', views.search_suggestions, name='search_suggestions'),
+    
 ]
 

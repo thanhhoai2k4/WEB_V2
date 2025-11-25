@@ -7,7 +7,7 @@ from .models import Product, Category, CartItem, Cart
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
-
+from django.http import JsonResponse
 
 
 def home(request):
@@ -160,10 +160,10 @@ def shop(request):
     categories = Category.objects.all()
 
     # 2. Lấy tham số từ URL (Method GET)
-    category_slug = request.GET.get('category')
-    search_query = request.GET.get('q')
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
+    category_slug = request.GET.get('category',"") 
+    search_query = request.GET.get('q', "")
+    min_price = request.GET.get('min_price',"")
+    max_price = request.GET.get('max_price',"")
 
     # 3. Áp dụng bộ lọc (Logic lọc tuần tự)
     
@@ -369,16 +369,29 @@ def blog_detail(request, slug):
 
 
 
-def search(request):
-    query = request.GET.get('q', '') # if exist get 's', else empty string
-    results = []
+def search_suggestions(request):
+    """
+    API trả về gợi ý sản phẩm dưới dạng JSON cho thanh tìm kiếm.
+    """
+    query = request.GET.get('q', '')
+    data = []
+
     if query:
-        results = Product.objects.filter(
-            Q(title__icontains=query) | 
-            Q(description__icontains=query)
-        )
-    context = {
-        'query': query,
-        'results': results
-    }
-    return redirect(request, 'search_results.html', context)
+        # Tìm kiếm trong tên sản phẩm, chỉ lấy 5 kết quả đầu tiên để tối ưu tốc độ
+        products = Product.objects.filter(
+            name__icontains=query, 
+            is_active=True
+        )[:5]
+
+        for product in products:
+            # Xây dựng dữ liệu trả về cho từng sản phẩm
+            item = {
+                'name': product.name,
+                'price': product.price, # Sử dụng property price (đã tính giảm giá)
+                'slug': product.slug,
+                # Xử lý ảnh: nếu có ảnh thì lấy url, không thì rỗng
+                'image': product.image.url if product.image else '', 
+            }
+            data.append(item)
+
+    return JsonResponse({'results': data})

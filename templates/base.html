@@ -95,50 +95,138 @@
     </svg>  
 
     <div class="search-popup">
-        <div class="search-popup-container">
+    <div class="search-popup-container">
 
-          <form role="search" method="get" class="search-form" action="{% url 'shop' %}">
-          <input 
-              type="search" 
-              id="search-form" 
-              class="search-field" 
-              placeholder="Tìm kiếm sản phẩm..." 
-              value="{{ search_query|default:'' }}" 
-              name="q" 
+        <form role="search" method="get" class="search-form" action="{% url 'shop' %}">
+            <h5 class="cat-list-title">Tìm kiếm sản phẩm</h5>
+            
+            <input 
+                type="search" 
+                id="search-input" 
+                class="search-field" 
+                placeholder="Nhập tên sản phẩm..." 
+                value="{{ search_query|default:'' }}" 
+                name="q" 
+                autocomplete="off" 
             />
-          <button type="submit" class="search-submit">
-              <svg class="search"><use xlink:href="#search"></use></svg>
-          </button>
-          </form>
+            
+            <button type="submit" class="search-submit">
+                <svg class="search"><use xlink:href="#search"></use></svg>
+            </button>
+        </form>
 
-          <h5 class="cat-list-title">Browse Categories</h5>
-          
-          <ul class="cat-list">
-            <li class="cat-list-item">
-              <a href="#" title="Mobile Phones">Mobile Phones</a>
-            </li>
-            <li class="cat-list-item">
-              <a href="#" title="Smart Watches">Smart Watches</a>
-            </li>
-            <li class="cat-list-item">
-              <a href="#" title="Headphones">Headphones</a>
-            </li>
-            <li class="cat-list-item">
-              <a href="#" title="Accessories">Accessories</a>
-            </li>
-            <li class="cat-list-item">
-              <a href="#" title="Monitors">Monitors</a>
-            </li>
-            <li class="cat-list-item">
-              <a href="#" title="Speakers">Speakers</a>
-            </li>
-            <li class="cat-list-item">
-              <a href="#" title="Memory Cards">Memory Cards</a>
-            </li>
-          </ul>
+        <div id="search-results" class="search-results-box" style="display: none;">
+            </div>
 
         </div>
-    </div>
+</div>
+
+<style>
+    .search-results-box {
+        background: #fff;
+        border: 1px solid #e1e1e1;
+        margin-top: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border-radius: 4px;
+        text-align: left; /* Căn trái cho dễ đọc */
+    }
+    .search-item-link {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        text-decoration: none;
+        color: #333;
+        transition: background 0.2s;
+    }
+    .search-item-link:hover {
+        background: #f9f9f9;
+        color: #000;
+    }
+    .search-item-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        margin-right: 15px;
+        border-radius: 4px;
+    }
+    .search-item-info h6 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .search-item-info span {
+        font-size: 13px;
+        color: #d9534f; /* Màu đỏ cho giá */
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        const resultsBox = document.getElementById('search-results');
+        let debounceTimer;
+
+        // Lắng nghe sự kiện khi người dùng gõ phím
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+
+            // Xóa bộ đếm cũ (nếu người dùng gõ tiếp trong vòng 0.5s)
+            clearTimeout(debounceTimer);
+
+            if (query.length === 0) {
+                resultsBox.style.display = 'none';
+                return;
+            }
+
+            // Thiết lập bộ đếm mới: Chờ 500ms (0.5 giây)
+            debounceTimer = setTimeout(() => {
+                fetchSuggestions(query);
+            }, 500);
+        });
+
+        // Hàm gọi API lấy dữ liệu
+        function fetchSuggestions(query) {
+            // Gọi đến URL chúng ta đã định nghĩa trong urls.py
+            fetch(`/search-suggestions/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    renderResults(data.results);
+                })
+                .catch(error => console.error('Lỗi tìm kiếm:', error));
+        }
+
+        // Hàm vẽ kết quả ra màn hình
+        function renderResults(results) {
+            if (results.length > 0) {
+                const html = results.map(item => `
+                    <a href="/product/${item.slug}/" class="search-item-link">
+                        <img src="${item.image}" alt="${item.name}" class="search-item-img">
+                        <div class="search-item-info">
+                            <h6>${item.name}</h6>
+                            <span>${parseFloat(item.price).toLocaleString('vi-VN')} đ</span>
+                        </div>
+                    </a>
+                `).join('');
+                
+                resultsBox.innerHTML = html;
+                resultsBox.style.display = 'block';
+            } else {
+                resultsBox.innerHTML = '<div style="padding:10px; color:#666;">Không tìm thấy sản phẩm nào.</div>';
+                resultsBox.style.display = 'block';
+            }
+        }
+
+        // Ẩn kết quả khi click ra ngoài
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+                resultsBox.style.display = 'none';
+            }
+        });
+    });
+</script>
     
     <header id="header" class="site-header header-scrolled position-fixed text-black bg-light">
       <nav id="header-nav" class="navbar navbar-expand-lg px-3 mb-3">

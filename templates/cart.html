@@ -86,7 +86,7 @@
                     </div>
                     
                     {% if request.user.is_authenticated %}
-                        <button class="btn btn-primary w-100 py-2">Tiến hành thanh toán</button>
+                        <a href="{% url "checkout" %}" class="btn btn-primary btn-lg btn-block">Tiến hành thanh toán</a>
                     {% else %}
                         <a href="{% url 'login' %}?next={% url 'view_cart' %}" class="btn btn-warning w-100 py-2">
                             Đăng nhập để thanh toán

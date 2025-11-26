@@ -39,5 +39,12 @@ urlpatterns = [
 
     path('search-suggestions/', views.search_suggestions, name='search_suggestions'),
     
+
+
+    # checkout
+    path('checkout/', views.checkout, name='checkout'),
+    path('payment/<int:order_id>/', views.payment_gateway, name='payment_gateway'),
+    path('api/check-payment-status/', views.check_payment_status, name='check_payment_status'),
+    path('fake-webhook/<int:order_id>/', views.fake_payment_webhook, name='fake_webhook'), # Chỉ dùng test
 ]
 

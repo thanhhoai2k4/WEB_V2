@@ -26,3 +26,34 @@ class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ['phone_number', 'address', 'birth_date', 'avatar']
+
+
+
+# ministore/forms.py
+
+from .models import Order
+
+class OrderForm(forms.ModelForm):
+    PAYMENT_CHOICES = [
+        ('COD', 'Thanh toán khi nhận hàng (COD)'),
+        ('BANKING', 'Chuyển khoản ngân hàng'),
+    ]
+    
+    # Ghi đè widget để hiển thị lựa chọn thay vì text box
+    payment_method = forms.ChoiceField(choices=PAYMENT_CHOICES, widget=forms.RadioSelect, label="Phương thức thanh toán")
+
+    class Meta:
+        model = Order
+        fields = ['shipping_full_name', 'shipping_phone', 'shipping_address', 'note', 'payment_method']
+        widgets = {
+            'shipping_full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nguyễn Văn A'}),
+            'shipping_phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '0909...'}),
+            'shipping_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Số nhà, Đường, Quận/Huyện...'}),
+            'note': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Giao giờ hành chính...'}),
+        }
+        labels = {
+            'shipping_full_name': 'Họ và tên người nhận',
+            'shipping_phone': 'Số điện thoại',
+            'shipping_address': 'Địa chỉ giao hàng',
+            'note': 'Ghi chú đơn hàng',
+        }

@@ -95,19 +95,7 @@
 
 <div class="auth-container">
     <div class="container">
-        <!-- Hiển thị thông báo lỗi/thành công từ Django -->
-        {% if messages %}
-            <div class="row justify-content-center mb-4">
-                <div class="col-md-8">
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            <strong>Thông báo:</strong> {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
+        
 
         <div class="row justify-content-center">
             <div class="auth-card">
@@ -129,6 +117,19 @@
                                         id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login" 
                                         type="button" role="tab">Đăng nhập</button>
                             </li>
+                            <!-- Hiển thị thông báo lỗi/thành công từ Django -->
+                            {% if messages %}
+                                <div class="row justify-content-center mb-4">
+                                    <div class="col-md-8">
+                                        {% for message in messages %}
+                                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                                <strong>Thông báo:</strong> {{ message }}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link {% if active_tab == 'register' %}active{% endif %}" 
                                         id="pills-register-tab" data-bs-toggle="pill" data-bs-target="#pills-register" 

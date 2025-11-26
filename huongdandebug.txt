@@ -1,0 +1,4 @@
+Khi thực hiện debug để xem thông tin của các object: 
+- prodcuts[0].__dict__ 
+
+Nên viết 1 hàm để xuất các các tài sản của object.

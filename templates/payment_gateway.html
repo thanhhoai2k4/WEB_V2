@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block mobile_products %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h5 class="mb-0">Thanh toán chuyển khoản</h5>
+                </div>
+                <div class="card-body text-center p-4">
+                    
+                    <p class="text-muted mb-4">Vui lòng quét mã QR bên dưới để thanh toán</p>
+                    
+                    <div class="position-relative d-inline-block mb-4">
+                        <img src="{{ qr_url }}" alt="VietQR" class="img-fluid border rounded" style="max-width: 300px;">
+                        
+                        <div class="spinner-border text-primary position-absolute top-50 start-50 translate-middle" role="status" id="qr-loading" style="display: none;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <h3 class="text-primary fw-bold mb-1">{{ order.total_amount|floatformat:0 }} đ</h3>
+                    <p class="small text-muted">Nội dung: THANHTOAN DONHANG {{ order.id }}</p>
+
+                    <div class="alert alert-warning d-flex align-items-center justify-content-center mt-3" role="alert">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Đơn hàng sẽ hết hạn sau: &nbsp; <strong id="countdown">05:00</strong>
+                    </div>
+
+                    <button onclick="simulateBankTransfer()" class="btn btn-sm btn-outline-secondary mt-2">
+                        (Test) Giả lập khách đã ck
+                    </button>
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    <small class="text-muted">Hệ thống đang tự động kiểm tra giao dịch...</small>
+                    <div class="progress mt-2" style="height: 3px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. LOGIC ĐẾM NGƯỢC 5 PHÚT
+    let timeLeft = {{ timeout }}; // 300 giây từ server
+    const countdownEl = document.getElementById('countdown');
+    
+    const timerId = setInterval(() => {
+        timeLeft--;
+        
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        
+        // Định dạng 05:09 thay vì 5:9
+        countdownEl.innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(timerId);
+            alert("Hết thời gian thanh toán! Đơn hàng sẽ bị hủy.");
+            window.location.href = "{% url 'home' %}"; // Hoặc trang hủy đơn
+        }
+    }, 1000);
+
+    // 2. LOGIC POLLING (HỎI SERVER LIÊN TỤC)
+    // Cứ 3 giây hỏi server 1 lần xem đã thanh toán chưa
+    const checkPaymentInterval = setInterval(() => {
+        fetch("{% url 'check_payment_status' %}?order_id={{ order.id }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Nếu đã thanh toán -> Chuyển trang ngay lập tức
+                    clearInterval(checkPaymentInterval);
+                    clearInterval(timerId);
+                    
+                    alert("Thanh toán thành công! Cảm ơn bạn.");
+                    window.location.href = "{% url 'home' %}"; // Chuyển về trang chủ hoặc trang Success
+                }
+            });
+    }, 3000); // 3000ms = 3 giây
+
+    // 3. HÀM GIẢ LẬP (CHỈ ĐỂ TEST)
+    function simulateBankTransfer() {
+        fetch("{% url 'fake_webhook' order.id %}")
+            .then(res => res.json())
+            .then(data => {
+                console.log("Đã giả lập thanh toán bên ngân hàng!");
+                // Không cần làm gì thêm, thằng checkPaymentInterval ở trên sẽ tự bắt được sự kiện này
+            });
+    }
+</script>
+{% endblock %}

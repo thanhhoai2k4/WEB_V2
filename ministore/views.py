@@ -61,9 +61,14 @@ def register(request):
         if password != re_password:
             messages.error(request, "Mật khẩu không khớp!")
             return render(request, 'register.html', {'active_tab': 'register'}) # Giữ lại tab đăng ký
-
         if User.objects.filter(username=username).exists():
             messages.error(request, "Tên đăng nhập đã tồn tại!")
+            return render(request, 'register.html', {'active_tab': 'register'})
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email đã được sử dụng!")
+            return render(request, 'register.html', {'active_tab': 'register'})
+        if User.objects.filter(profile__phone_number=phone).exists():
+            messages.error(request, "Số điện thoại đã được sử dụng!")
             return render(request, 'register.html', {'active_tab': 'register'})
 
         # 3. Tạo User
@@ -138,6 +143,7 @@ def login_view(request):
             if next_url:
                 return redirect(next_url)
             return redirect('home')
+    
         else:
             messages.error(request, "Sai tài khoản hoặc mật khẩu!")
             return render(request, 'register.html', {'active_tab': 'login'})
@@ -404,3 +410,121 @@ def search_suggestions(request):
             data.append(item)
 
     return JsonResponse({'results': data})
+
+
+
+
+from .forms import OrderForm
+from .models import Order, OrderItem
+
+@login_required
+def checkout(request):
+    cart = _get_cart(request)
+    cart_items = cart.items.select_related('product').all()
+    
+    # 1. Nếu giỏ hàng rỗng thì đá về trang shop
+    if not cart_items:
+        messages.warning(request, "Giỏ hàng của bạn đang trống!")
+        return redirect('shop')
+
+    # Tính lại tổng tiền để hiển thị
+    total_bill = sum(item.total_price for item in cart_items)
+
+    if request.method == 'POST':
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            # 2. Tạo Order (nhưng chưa lưu hẳn vào DB để tính toán thêm)
+            order = form.save(commit=False)
+            order.user = request.user
+            order.total_amount = total_bill # Lưu tổng tiền tại thời điểm mua
+            order.save() # Lúc này mới có ID của Order
+
+            # 3. Chuyển CartItem -> OrderItem (Snapshot dữ liệu)
+            for item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    quantity=item.quantity,
+                    price=item.product.price # Quan trọng: Lưu giá tại thời điểm mua
+                )
+                
+                # Trừ kho (Optional - logic nâng cao)
+                # item.product.stock -= item.quantity
+                # item.product.save()
+
+            # 4. Xóa giỏ hàng sau khi đặt thành công
+            cart.items.all().delete()
+
+            # kiem tra xem thanh toan khi nhan hang hay la chuyen khoang
+            if order.payment_method == 'BANKING':
+                # chuyen sang trang web ma thanh toan
+                return redirect('payment_gateway', order_id=order.id)
+
+
+            
+            # Gửi thông báo & Chuyển hướng
+            messages.success(request, f"Đặt hàng thành công! Mã đơn: #{order.id}")
+            return redirect('home') # Hoặc chuyển tới trang 'order_success'
+    else:
+        # --- LOGIC SÁNG TẠO: AUTO-FILL FORM ---
+        initial_data = {
+            'shipping_full_name': f"{request.user.last_name} {request.user.first_name}".strip(),
+            'shipping_phone': '',
+            'shipping_address': ''
+        }
+        # Nếu user có Profile, lấy dữ liệu lấp vào
+        if hasattr(request.user, 'profile'):
+            initial_data['shipping_phone'] = request.user.profile.phone_number
+            initial_data['shipping_address'] = request.user.profile.address
+            
+        form = OrderForm(initial=initial_data)
+
+    context = {
+        'form': form,
+        'cart_items': cart_items,
+        'total_bill': total_bill
+    }
+    return render(request, 'checkout.html', context)
+
+
+
+
+def payment_gateway(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # SÁNG TẠO: Tự động tạo link VietQR
+    # Cấu trúc: https://img.vietqr.io/image/<BANK_ID>-<TK_NO>-<TEMPLATE>.png?amount=<TIEN>&addInfo=<NOIDUNG>
+    # Bạn thay BANK_ID (ví dụ MB, VCB) và số tài khoản của bạn vào đây
+    MY_BANK = {
+        'BANK_ID': 'MB', 
+        'ACCOUNT_NO': '0987654321', # Thay số tk của bạn
+        'TEMPLATE': 'compact'
+    }
+    
+    # Nội dung ck bắt buộc phải có mã đơn hàng để nhận diện
+    content = f"THANHTOAN DONHANG {order.id}"
+    qr_url = f"https://img.vietqr.io/image/{MY_BANK['BANK_ID']}-{MY_BANK['ACCOUNT_NO']}-{MY_BANK['TEMPLATE']}.png?amount={int(order.total_amount)}&addInfo={content}"
+
+    return render(request, 'payment_gateway.html', {
+        'order': order,
+        'qr_url': qr_url,
+        'timeout': 300 # 5 phút = 300 giây
+    })
+
+def check_payment_status(request):
+    """API để frontend gọi liên tục (Polling) kiểm tra trạng thái"""
+    order_id = request.GET.get('order_id')
+    order = get_object_or_404(Order, id=order_id)
+    
+    if order.is_paid:
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'pending'})
+
+# --- HÀM GIẢ LẬP WEBHOOK (Chỉ dùng để test) ---
+def fake_payment_webhook(request, order_id):
+    """Giả vờ ngân hàng báo tiền đã về"""
+    order = get_object_or_404(Order, id=order_id)
+    order.is_paid = True
+    order.status = 'CONFIRMED' # Đã xác nhận
+    order.save()
+    return JsonResponse({'message': 'Simulated Bank Transfer Success'})

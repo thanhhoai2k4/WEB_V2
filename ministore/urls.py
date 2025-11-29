@@ -54,6 +54,6 @@ urlpatterns = [
 
     path('chi-tiet-nguoi-mua-hang/', views.user_list, name='chi_tiet_nguoi_mua_hang'),
 
-
+    path("formtest/", views.form_test, name="formtest"),
 ]
 

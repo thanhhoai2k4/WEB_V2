@@ -552,3 +552,7 @@ def user_list(request):
         'page_title': 'Danh sách khách hàng'
     }
     return render(request, 'user_list.html', context)
+
+
+def form_test(request):
+    return render(request, 'form_dk_example.html')

@@ -294,7 +294,9 @@
                       <a href="#" class="dropdown-item">Contact</a>
                     </li>
                     <li>
-                      <a href="{% url "chi_tiet_nguoi_mua_hang" %}" class="dropdown-item">Chi Tiet Nguoi mua hang</a>
+                      {% if user.is_superuser %}
+                        <a href="{% url "chi_tiet_nguoi_mua_hang" %}" class="dropdown-item">Chi Tiet Nguoi mua hang</a>
+                      {% endif %}
                     </li>
                   </ul>
                 </li>

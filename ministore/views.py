@@ -543,13 +543,9 @@ def user_list(request):
     Chỉ dành cho Staff/Admin.
     """
     # Lấy tất cả user, sắp xếp theo ngày tham gia mới nhất
-    users = User.objects.all().order_by('-date_joined')
-
-    user_profiles = users.profile
-
+    users = User.objects.select_related('profile').all().order_by('-date_joined')
 
     # lay dia chi
-
     
     context = {
         'users': users,

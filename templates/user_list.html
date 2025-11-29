@@ -18,10 +18,10 @@
                                     <tr>
                                         <th scope="col">ID</th>
                                         <th scope="col">Username</th>
-                                        <th scope="col">Email</th>
-                                        <th scope="col">Ngày tham gia</th>
+                                        {% comment %} <th scope="col">Email</th> {% endcomment %}
+                                        {% comment %} <th scope="col">Ngày tham gia</th>
                                         <th scope="col">Vai trò</th>
-                                        <th scope="col">Trạng thái</th>
+                                        <th scope="col">Trạng thái</th> {% endcomment %}
                                         <th scope="col">Dia chi</th>
                                     </tr>
                                 </thead>
@@ -38,7 +38,7 @@
                                                 <span class="fw-bold">{{ user.username }}</span>
                                             </div>
                                         </td>
-                                        <td>{{ user.email|default:"Chưa cập nhật" }}</td>
+                                        {% comment %} <td>{{ user.email|default:"Chưa cập nhật" }}</td>
                                         <td>{{ user.date_joined|date:"d/m/Y H:i" }}</td>
                                         <td>
                                             {% if user.is_superuser %}
@@ -55,10 +55,10 @@
                                             {% else %}
                                                 <span class="badge bg-secondary">Đã khóa</span>
                                             {% endif %}
-                                        </td>
+                                        </td> {% endcomment %}
                                         <td>
                                             {% if user.profile.address %}
-                                                <span class="badge bg-success">user.profile.address</span>
+                                                <span class="badge bg-success">{{ user.profile.address }}</span>
                                             {% else %}
                                                 <span class="badge bg-success">Chua cap nhat Address</span>
                                             {% endif %}

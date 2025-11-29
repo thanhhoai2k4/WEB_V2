@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-
+from .views import UserDetailView
 
 
 urlpatterns = [
@@ -55,5 +55,7 @@ urlpatterns = [
     path('chi-tiet-nguoi-mua-hang/', views.user_list, name='chi_tiet_nguoi_mua_hang'),
 
     path("formtest/", views.form_test, name="formtest"),
+
+    path('chi-tiet-nguoi-mua-hang/<int:pk>/', UserDetailView.as_view(), name='user_detail'),
 ]
 

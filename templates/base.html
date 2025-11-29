@@ -302,7 +302,13 @@
                     <li>
                         <a href="{% url "formtest" %}" class="dropdown-item">form test nhap ten va address</a>
                     </li>
+                    
+                    <li>
+                        <a href="{% url 'user_detail' user.id %}">Xem chi tiết {{ user.username }}</a>
+                    </li>
 
+
+                    
                   </ul>
                 </li>
                 <li class="nav-item">

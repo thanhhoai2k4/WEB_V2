@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block company_services %}
+<div class="container">
+    <h2>Thông tin người dùng: {{ target_user.username }}</h2>
+    
+    <form>
+        <div class="form-group">
+            <label>Họ và Tên:</label>
+            <div class="row">
+                <div class="col">
+                    {{ user_form.first_name }} 
+                </div>
+                <div class="col">
+                    {{ user_form.last_name }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Địa chỉ:</label>
+            {{ profile_form.address }} </div>
+    </form>
+</div>
+{% endblock %}

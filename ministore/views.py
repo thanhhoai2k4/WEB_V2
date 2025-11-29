@@ -11,6 +11,8 @@ from django.http import JsonResponse
 from django.db.models.functions import Coalesce
 from django.core.paginator import Paginator, EmptyPage
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.generic.detail import DetailView
+from .models import UserProfile, User
 # PageNotAnIntege
 
 
@@ -556,3 +558,38 @@ def user_list(request):
 
 def form_test(request):
     return render(request, 'form_dk_example.html')
+
+
+def nhan_thong_tin(request):
+    if request.method == 'POST':
+        ten = request.POST.get('username')
+        email = request.POST.get('address')
+
+
+        print("Username: ", ten)
+        print("address: ", email)
+        messages.success(request, "Da nhan thong tin cua ban. Cam on!")
+        return redirect('formtest')
+
+    return redirect('formtest')
+
+
+
+
+class UserDetailView(DetailView):
+    model = User
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_user = self.object
+
+
+        try:
+            user_profile = current_user.profile
+        except UserProfile.DoesNotExist:
+            user_profile = None
+
+        context['user_form'] = UserUpdateForm(instance=current_user)
+        context['profile_form'] = ProfileUpdateForm(instance=user_profile)
+
+        context['profile'] = user_profile
+        return context

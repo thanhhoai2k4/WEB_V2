@@ -46,5 +46,14 @@ urlpatterns = [
     path('payment/<int:order_id>/', views.payment_gateway, name='payment_gateway'),
     path('api/check-payment-status/', views.check_payment_status, name='check_payment_status'),
     path('fake-webhook/<int:order_id>/', views.fake_payment_webhook, name='fake_webhook'), # Chỉ dùng test
+
+
+
+
+
+
+    path('chi-tiet-nguoi-mua-hang/', views.user_list, name='chi_tiet_nguoi_mua_hang'),
+
+
 ]
 

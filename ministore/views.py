@@ -10,6 +10,7 @@ from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.db.models.functions import Coalesce
 from django.core.paginator import Paginator, EmptyPage
+from django.contrib.admin.views.decorators import staff_member_required
 # PageNotAnIntege
 
 
@@ -528,3 +529,30 @@ def fake_payment_webhook(request, order_id):
     order.status = 'CONFIRMED' # Đã xác nhận
     order.save()
     return JsonResponse({'message': 'Simulated Bank Transfer Success'})
+
+
+
+def chi_tiet_nguoi_mua_hang(request):
+    return render(request, 'chi_tiet_nguoi_mua_hang.html')
+
+
+@staff_member_required(login_url='login')
+def user_list(request):
+    """
+    Hiển thị danh sách tất cả user đã đăng ký.
+    Chỉ dành cho Staff/Admin.
+    """
+    # Lấy tất cả user, sắp xếp theo ngày tham gia mới nhất
+    users = User.objects.all().order_by('-date_joined')
+
+    user_profiles = users.profile
+
+
+    # lay dia chi
+
+    
+    context = {
+        'users': users,
+        'page_title': 'Danh sách khách hàng'
+    }
+    return render(request, 'user_list.html', context)

@@ -613,7 +613,3 @@ def form_test(request):
     return render(request, 'test_form_l3.html', context)
 
 
-
-
-def login_google(request):
-    return render(request, 'register.html')

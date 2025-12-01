@@ -20,8 +20,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("ministore.urls")), # instead of hardcoding, we include the store app's URLs
     path("accounts/", include("allauth.urls")), # for django-allauth
+    path("", include("ministore.urls")), # instead of hardcoding, we include the store app's URLs
 ]
 
 

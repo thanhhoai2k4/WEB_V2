@@ -14,6 +14,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.views.generic.detail import DetailView
 from .models import UserProfile, User
 from .forms import FormTest
+from django.contrib.auth import logout
 # PageNotAnIntege
 
 
@@ -610,3 +611,9 @@ def form_test(request):
 
     context['form'] = form
     return render(request, 'test_form_l3.html', context)
+
+
+
+
+def login_google(request):
+    return render(request, 'register.html')

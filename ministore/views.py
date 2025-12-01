@@ -13,6 +13,7 @@ from django.core.paginator import Paginator, EmptyPage
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.generic.detail import DetailView
 from .models import UserProfile, User
+from .forms import FormTest
 # PageNotAnIntege
 
 
@@ -556,10 +557,6 @@ def user_list(request):
     return render(request, 'user_list.html', context)
 
 
-def form_test(request):
-    return render(request, 'form_dk_example.html')
-
-
 def nhan_thong_tin(request):
     if request.method == 'POST':
         ten = request.POST.get('username')
@@ -575,21 +572,18 @@ def nhan_thong_tin(request):
 
 
 
+def form_test(request):
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        first_name = request.POST.get('first_name')
+        print("Username: ", username)
+        print("First Name: ", first_name)
+        messages.success(request, "Da nhan du lieu tu form. Cam on!")
+    else:
 
-class UserDetailView(DetailView):
-    model = User
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        current_user = self.object
+        context = {}
+        form = FormTest()
 
-
-        try:
-            user_profile = current_user.profile
-        except UserProfile.DoesNotExist:
-            user_profile = None
-
-        context['user_form'] = UserUpdateForm(instance=current_user)
-        context['profile_form'] = ProfileUpdateForm(instance=user_profile)
-
-        context['profile'] = user_profile
-        return context
+    context['form'] = form
+    return render(request, 'test_form_l3.html', context)

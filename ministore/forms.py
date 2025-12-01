@@ -57,3 +57,21 @@ class OrderForm(forms.ModelForm):
             'shipping_address': 'Địa chỉ giao hàng',
             'note': 'Ghi chú đơn hàng',
         }
+
+
+
+
+
+class FormTest(forms.ModelForm):
+    # user_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    # address =  forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    username= forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    first_name= forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name= forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    email= forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', "last_name", "email"]
+    def __str__(self):
+        return "form test"

@@ -166,7 +166,7 @@ def logout_user(request):
     messages.success(request, "Đã đăng xuất thành công.")
     return redirect('login')
 
-# View này có thể bỏ hoặc để dùng chung
+# có thể bỏ.
 def auth_view(request):
     return render(request, 'register.html', {'active_tab': 'login'})
 
@@ -189,7 +189,6 @@ def shop(request):
     max_price = request.GET.get('max_price',"")
 
     # 3. Áp dụng bộ lọc (Logic lọc tuần tự)
-    
     # Lọc theo danh mục
     if category_slug:
         products = products.filter(category__slug__icontains=category_slug, is_active=True)

@@ -145,10 +145,15 @@ def login_view(request):
             messages.success(request, f"Chào mừng {username} quay trở lại!")
             
             next_url = request.GET.get('next')
-            if next_url:
-                return redirect(next_url)
-            return redirect('home')
-    
+
+            if user.is_staff or user.is_superuser: # Nếu là staff/admin
+                if next_url:
+                    return redirect(next_url)
+                return redirect('admin:index')
+            else:
+                if next_url:
+                    return redirect(next_url)
+                return redirect('home')
         else:
             messages.error(request, "Sai tài khoản hoặc mật khẩu!")
             return render(request, 'register.html', {'active_tab': 'login'})

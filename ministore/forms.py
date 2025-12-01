@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import UserProfile
+from .models import Order
 
-# Form 1: Xử lý thông tin cơ bản (User Model)
+
+# basic form for user
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}))
     first_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
@@ -12,9 +14,10 @@ class UserUpdateForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'email']
 
-# Form 2: Xử lý thông tin mở rộng (UserProfile Model)
+# Form 2:profile
 class ProfileUpdateForm(forms.ModelForm):
-    # Thêm class CSS bootstrap cho đẹp
+    
+
     phone_number = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     address = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     birth_date = forms.DateField(
@@ -27,12 +30,7 @@ class ProfileUpdateForm(forms.ModelForm):
         model = UserProfile
         fields = ['phone_number', 'address', 'birth_date', 'avatar']
 
-
-
-# ministore/forms.py
-
-from .models import Order
-
+# Form 3: order history 
 class OrderForm(forms.ModelForm):
     PAYMENT_CHOICES = [
         ('COD', 'Thanh toán khi nhận hàng (COD)'),

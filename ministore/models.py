@@ -7,7 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist
 
-# --- 1. CORE: CATEGORY & PRODUCT ---
+
 
 class Category(models.Model):
     name = models.CharField(max_length=200, unique=True, verbose_name="Tên danh mục")
@@ -277,8 +277,8 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     """
-    Ngay khi một User mới được tạo (created=True),
-    hàm này sẽ tự động tạo một UserProfile rỗng đi kèm.
+        Ngay khi một User mới được tạo (created=True),
+        hàm này sẽ tự động tạo một UserProfile rỗng đi kèm.
     """
     if created:
         UserProfile.objects.create(user=instance)

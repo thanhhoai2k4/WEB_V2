@@ -119,8 +119,103 @@
                     {% endif %}
                 </div>
             </div>
-            
+            <div>
+                </div> <div class="card shadow border-0 mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Lịch Sử Đơn Hàng</h5>
+                </div>
+                <div class="card-body">
+                    {% if orders %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Ngày đặt</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Trạng thái</th>
+                                        <th>Chi tiết</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td>#{{ order.id }}</td>
+                                        <td>{{ order.created_at|date:"d/m/Y" }}</td>
+                                        <td class="fw-bold">{{ order.total_amount }} đ</td>
+                                        <td>
+                                            {% if order.status == 'PENDING' %}
+                                                <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                            {% elif order.status == 'CONFIRMED' %}
+                                                <span class="badge bg-info text-dark">Đã xác nhận</span>
+                                            {% elif order.status == 'SHIPPING' %}
+                                                <span class="badge bg-primary">Đang giao</span>
+                                            {% elif order.status == 'COMPLETED' %}
+                                                <span class="badge bg-success">Hoàn thành</span>
+                                            {% elif order.status == 'CANCELLED' %}
+                                                <span class="badge bg-danger">Đã hủy</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.id }}">
+                                                <i class="bi bi-eye"></i> Xem
+                                            </a>
+
+                                            <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Chi tiết đơn hàng #{{ order.id }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p><strong>Người nhận:</strong> {{ order.shipping_full_name }} - {{ order.shipping_phone }}</p>
+                                                            <p><strong>Địa chỉ:</strong> {{ order.shipping_address }}</p>
+                                                            <hr>
+                                                            <table class="table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Sản phẩm</th>
+                                                                        <th>SL</th>
+                                                                        <th>Đơn giá</th>
+                                                                        <th>Thành tiền</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for item in order.items.all %}
+                                                                    <tr>
+                                                                        <td>{{ item.product.name }}</td>
+                                                                        <td>{{ item.quantity }}</td>
+                                                                        <td>{{ item.price }} đ</td>
+                                                                        <td>{% widthratio item.price 1 item.quantity %} đ</td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            {% if order.status == 'PENDING' and not order.is_paid %}
+                                                                <a href="{% url 'payment_gateway' order.id %}" class="btn btn-primary">Thanh toán ngay</a>
+                                                            {% endif %}
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">Bạn chưa có đơn hàng nào.</p>
+                    {% endif %}
+                </div>
             </div>
+            </div>
+        </div>
+        
 
     </div>
 </div>

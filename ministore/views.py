@@ -345,16 +345,33 @@ def profile(request):
     cart = _get_cart(request) 
     
     # Lấy các item trong giỏ, dùng select_related để tối ưu truy vấn SQL
+    # 1-n relationship: CartItem -> Product
     cart_items = cart.items.select_related('product').all()
     
     # Tính tổng tiền (Reuse logic từ view_cart)
+    # total_bill = [for i in itens: item.total_price]
     total_bill = sum(item.total_price for item in cart_items)
+
+     # get history cart item
+        # in Order have: 
+        #   + user: ForeignKey to User
+        #   + shipping_full_name
+        #   + shipping_phone
+        #   + shipping_address
+        #   + total_amount
+        #   + coupon
+        # ..... vv
+        # filter: chon ra nhung don hang cua user hien tai
+        # get user current: user.request.user
+        #link: https://www.w3schools.com/django/django_queryset_filter.php
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
 
     context = {
         'u_form': u_form,
         'p_form': p_form,
         'cart_items': cart_items, # Truyền giỏ hàng sang template
         'total_bill': total_bill, # Truyền tổng tiền
+        "orders": orders,  # order history cua user hien tai
     }
 
     return render(request, 'profile.html', context)
@@ -470,23 +487,29 @@ def checkout(request):
             messages.success(request, f"Đặt hàng thành công! Mã đơn: #{order.id}")
             return redirect('home') # Hoặc chuyển tới trang 'order_success'
     else:
-        # --- LOGIC SÁNG TẠO: AUTO-FILL FORM ---
+        # nên sử dụng form auto fill
+        # xem ở: ministore: forms.py: OrderForm 
+        # khởi tạo: Oderform(inital={...}) dict
         initial_data = {
             'shipping_full_name': f"{request.user.last_name} {request.user.first_name}".strip(),
             'shipping_phone': '',
             'shipping_address': ''
         }
         # Nếu user có Profile, lấy dữ liệu lấp vào
+        # rút ngắn thời gian điện thông tin.
         if hasattr(request.user, 'profile'):
             initial_data['shipping_phone'] = request.user.profile.phone_number
             initial_data['shipping_address'] = request.user.profile.address
             
         form = OrderForm(initial=initial_data)
 
+
+       
+
     context = {
-        'form': form,
+        'form': form, # profile user
         'cart_items': cart_items,
-        'total_bill': total_bill
+        'total_bill': total_bill,
     }
     return render(request, 'checkout.html', context)
 

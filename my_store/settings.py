@@ -40,6 +40,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "ministore",
     "debug_toolbar", # da them de debug 
+
+    # API GOOGLE GMAIL LOGIN
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 # doan ma da them de debug
@@ -159,3 +167,34 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.INFO: 'info',
 }
+
+
+# 2 pt: user_password, allauth (google gmail)
+AUTHENTICATION_BACKENDS = [
+    # Cần thiết để đăng nhập bằng username/password trong admin
+    'django.contrib.auth.backends.ModelBackend',
+    # Cần thiết cho các phương thức đăng nhập của allauth (bao gồm Google)
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+
+
+
+
+# cấu hình cho django-allauth hoatj ddoong.
+SITE_ID = 1
+LOGIN_REDIRECT_URL = '/' # after login
+LOGOUT_REDIRECT_URL = '/' # after logout
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
+ACCOUNT_EMAIL_VERIFICATION = "none" # khong can xac thuc email

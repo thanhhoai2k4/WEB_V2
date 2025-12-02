@@ -1,20 +1,34 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.models import User
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
-from django.db.models import Q # doc sach UIT de hieu ve Q
-from .models import Product, Category, CartItem, Cart
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse_lazy
-from django.http import JsonResponse
+from django.core.paginator import EmptyPage, Paginator
+from django.db.models import Q  # doc sach UIT de hieu ve Q
 from django.db.models.functions import Coalesce
-from django.core.paginator import Paginator, EmptyPage
-from django.contrib.admin.views.decorators import staff_member_required
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
 from django.views.generic.detail import DetailView
-from .models import UserProfile, User
-from .forms import FormTest
-from django.contrib.auth import logout
+
+from .forms import (
+    FormTest,
+    OrderForm,
+    ProfileUpdateForm,
+    UserUpdateForm,
+)
+from .models import (
+    Cart,
+    CartItem,
+    Category,
+    Order,
+    OrderItem,
+    Post,
+    Product,
+    UserProfile,
+)
 
 
 def home(request):
@@ -348,6 +362,10 @@ def add_to_cart(request, product_id):
     return redirect('view_cart')
 
 def view_cart(request):
+    """
+        lấy các sản phẩm trong giỏ hàng và hiển thị chúng.
+    """
+
     cart = _get_cart(request)
     items = cart.items.select_related('product').all()
     
@@ -378,23 +396,28 @@ def update_cart_item(request, item_id):
             item.quantity += 1
         elif action == 'decrease':
             item.quantity -= 1
-            
         if item.quantity <= 0:
             item.delete()
         else:
             item.save()
-            
     return redirect('view_cart')
-
-from .forms import UserUpdateForm, ProfileUpdateForm
-from django.contrib.auth.decorators import login_required
 
 
 @login_required
 def profile(request):
-    # --- PHẦN 1: XỬ LÝ FORM CẬP NHẬT ---
+    """
+        u_form = UserUpdateForm(request.POST, instance=request.user): dành cho việc update
+        u_form = UserUpdateForm(instance=request.user): dành cho việt tạo form.
+    """
+    # XỬ LÝ FORM CẬP NHẬT
     if request.method == 'POST':
+        # 2 form: 
+        #   u_form: user: của djangon gồm email, ....
+        # Ý nghĩa tổng quát: Dòng này khởi tạo một biểu mẫu (form) chứa đầy dữ liệu mà người dùng vừa gửi lên (request.POST), 
+        # nhưng quan trọng hơn, nó gắn (bind) dữ liệu đó vào một người dùng cụ thể đang đăng nhập (instance=request.user). 
+        # Mục đích là để sửa đổi thông tin của người đó chứ không phải tạo ra một người mới.
         u_form = UserUpdateForm(request.POST, instance=request.user)
+        # p_form: profile
         p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
 
         if u_form.is_valid() and p_form.is_valid():
@@ -402,16 +425,19 @@ def profile(request):
             p_form.save()
             messages.success(request, 'Hồ sơ của bạn đã được cập nhật thành công!')
             return redirect('profile') # Post-Redirect-Get pattern
+    
+    # get
     else:
+        # tạo ra form.
         u_form = UserUpdateForm(instance=request.user)
         p_form = ProfileUpdateForm(instance=request.user.profile)
 
-    # --- PHẦN 2 (THÊM MỚI): LẤY DỮ LIỆU GIỎ HÀNG ---
     # Sử dụng hàm helper _get_cart bạn đã viết ở trên
     cart = _get_cart(request) 
     
     # Lấy các item trong giỏ, dùng select_related để tối ưu truy vấn SQL
     # 1-n relationship: CartItem -> Product
+    # lấy cart
     cart_items = cart.items.select_related('product').all()
     
     # Tính tổng tiền (Reuse logic từ view_cart)
@@ -443,7 +469,6 @@ def profile(request):
     return render(request, 'profile.html', context)
 
 
-
 class ChangePasswordView(SuccessMessageMixin, PasswordChangeView):
     template_name = 'change_password.html' # File HTML giao diện
     success_message = "Đổi mật khẩu thành công!" # Thông báo khi xong
@@ -454,11 +479,6 @@ def about(request):
     return render(request, 'about.html')
 
 
-
-
-# Import thêm Model Post
-from .models import Post 
-
 def blog_list(request):
     """Hiển thị danh sách tất cả bài viết"""
     posts = Post.objects.all().order_by('-created_at') # Bài mới nhất lên đầu
@@ -468,7 +488,6 @@ def blog_detail(request, slug):
     """Hiển thị nội dung chi tiết một bài viết"""
     post = get_object_or_404(Post, slug=slug)
     return render(request, 'blog_detail.html', {'post': post})
-
 
 
 def search_suggestions(request):
@@ -499,10 +518,6 @@ def search_suggestions(request):
     return JsonResponse({'results': data})
 
 
-
-
-from .forms import OrderForm
-from .models import Order, OrderItem
 
 @login_required
 def checkout(request):
@@ -676,5 +691,3 @@ def form_test(request):
 
     context['form'] = form
     return render(request, 'test_form_l3.html', context)
-
-

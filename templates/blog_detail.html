@@ -2,34 +2,30 @@
 {% load static %}
 
 {% block content %}
-<div class="container py-5">
+  <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="text-center mb-4">
-                <h1 class="fw-bold mb-3">{{ post.title }}</h1>
-                <p class="text-muted">
-                    Đăng bởi <strong>{{ post.author.username }}</strong> vào ngày {{ post.created_at|date:"d/m/Y" }}
-                </p>
-            </div>
-
-            {% if post.image %}
-            <div class="mb-5 text-center">
-                <img src="{{ post.image.url }}" class="img-fluid rounded shadow" alt="{{ post.title }}">
-            </div>
-            {% endif %}
-
-            <div class="article-content lh-lg fs-5">
-                {{ post.content|linebreaks }}
-            </div>
-
-            <hr class="my-5">
-
-            <div class="text-center">
-                <a href="{% url 'blog_list' %}" class="btn btn-outline-primary rounded-pill px-4">
-                    &larr; Quay lại danh sách tin tức
-                </a>
-            </div>
+      <div class="col-lg-8">
+        <div class="text-center mb-4">
+          <h1 class="fw-bold mb-3">{{ post.title }}</h1>
+          <p class="text-muted">
+            Đăng bởi <strong>{{ post.author.username }}</strong> vào ngày {{ post.created_at|date:'d/m/Y' }}
+          </p>
         </div>
+
+        {% if post.image %}
+          <div class="mb-5 text-center">
+            <img src="{{ post.image.url }}" class="img-fluid rounded shadow" alt="{{ post.title }}" />
+          </div>
+        {% endif %}
+
+        <div class="article-content lh-lg fs-5">{{ post.content|linebreaks }}</div>
+
+        <hr class="my-5" />
+
+        <div class="text-center">
+          <a href="{% url 'blog_list' %}" class="btn btn-outline-primary rounded-pill px-4">&larr; Quay lại danh sách tin tức</a>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 {% endblock %}

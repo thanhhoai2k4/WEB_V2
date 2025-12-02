@@ -15,8 +15,6 @@ from django.views.generic.detail import DetailView
 from .models import UserProfile, User
 from .forms import FormTest
 from django.contrib.auth import logout
-# PageNotAnIntege
-
 
 
 def home(request):

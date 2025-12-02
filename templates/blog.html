@@ -2,42 +2,35 @@
 {% load static %}
 
 {% block mobile_products %}
-<div class="container py-5">
+  <div class="container py-5">
     <h2 class="text-center display-4 mb-5">Tin tức công nghệ</h2>
-    
+
     <div class="row">
-        {% for post in posts %}
+      {% for post in posts %}
         <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-image position-relative overflow-hidden">
-                    <a href="{% url 'blog_detail' slug=post.slug %}">
-                        {% if post.image %}
-                            <img src="{{ post.image.url }}" class="img-fluid w-100" style="height: 250px; object-fit: cover;" alt="{{ post.title }}">
-                        {% else %}
-                             <img src="{% static 'images/post-item1.jpg' %}" class="img-fluid w-100" style="height: 250px; object-fit: cover;">
-                        {% endif %}
-                    </a>
-                </div>
-                <div class="card-body">
-                    <div class="text-muted small mb-2">
-                        {{ post.created_at|date:"d/m/Y" }} - {{ post.author.username }}
-                    </div>
-                    <h4 class="card-title">
-                        <a href="{% url 'blog_detail' slug=post.slug %}" class="text-decoration-none text-dark">
-                            {{ post.title }}
-                        </a>
-                    </h4>
-                    <p class="card-text text-muted">
-                        {{ post.content|truncatewords:20 }} </p>
-                    <a href="{% url 'blog_detail' slug=post.slug %}" class="btn btn-link px-0">Đọc tiếp &rarr;</a>
-                </div>
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-image position-relative overflow-hidden">
+              <a href="{% url 'blog_detail' slug=post.slug %}">
+                {% if post.image %}
+                  <img src="{{ post.image.url }}" class="img-fluid w-100" style="height: 250px; object-fit: cover;" alt="{{ post.title }}" />
+                {% else %}
+                  <img src="{% static 'images/post-item1.jpg' %}" class="img-fluid w-100" style="height: 250px; object-fit: cover;" />
+                {% endif %}
+              </a>
             </div>
+            <div class="card-body">
+              <div class="text-muted small mb-2">{{ post.created_at|date:'d/m/Y' }} - {{ post.author.username }}</div>
+              <h4 class="card-title"><a href="{% url 'blog_detail' slug=post.slug %}" class="text-decoration-none text-dark">{{ post.title }}</a></h4>
+              <p class="card-text text-muted">{{ post.content|truncatewords:20 }}</p>
+              <a href="{% url 'blog_detail' slug=post.slug %}" class="btn btn-link px-0">Đọc tiếp &rarr;</a>
+            </div>
+          </div>
         </div>
-        {% empty %}
+      {% empty %}
         <div class="col-12 text-center">
-            <p>Chưa có bài viết nào.</p>
+          <p>Chưa có bài viết nào.</p>
         </div>
-        {% endfor %}
+      {% endfor %}
     </div>
-</div>
+  </div>
 {% endblock %}

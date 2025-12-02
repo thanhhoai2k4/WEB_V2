@@ -1,60 +1,45 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load i18n %}
 
 {% block company_services %}
-<section class="padding-large">
+  <section class="padding-large">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="card shadow-sm border-0 rounded-3">
-                    <div class="card-body p-5 text-center">
-                        
-                        <h3 class="mb-4">Hoàn tất đăng ký</h3>
-                        
-                        <p class="text-muted mb-4">
-                            Bạn đang đăng nhập bằng tài khoản <strong>{{ account.provider|title }}</strong>. 
-                            Vui lòng xác nhận thông tin bên dưới để tiếp tục.
-                        </p>
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+          <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-body p-5 text-center">
+              <h3 class="mb-4">Hoàn tất đăng ký</h3>
+              <p class="text-muted mb-4">
+                Bạn đang đăng nhập bằng tài khoản <strong>{{ account.provider|title }}</strong>. Vui lòng xác nhận thông tin bên dưới để tiếp tục.
+              </p>
+              <form class="signup" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
+                {% csrf_token %}
 
-                        <form class="signup" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
-                            {% csrf_token %}
-                            
-                            {% if form.errors %}
-                                <div class="alert alert-danger text-start">
-                                    {{ form.non_field_errors }}
-                                    {% for field in form %}
-                                        {% if field.errors %}
-                                            <small>{{ field.label }}: {{ field.errors|striptags }}</small><br>
-                                        {% endif %}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-
-                            {% for field in form %}
-                                <div class="mb-3 text-start">
-                                    <label class="form-label fw-bold">{{ field.label }}</label>
-                                    <input type="{{ field.field.widget.input_type }}" 
-                                           name="{{ field.name }}" 
-                                           id="{{ field.id_for_label }}"
-                                           class="form-control"
-                                           value="{{ field.value|default:'' }}"
-                                           placeholder="{{ field.label }}">
-                                </div>
-                            {% endfor %}
-
-                            {% if redirect_field_value %}
-                                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-                            {% endif %}
-
-                            <button type="submit" class="btn btn-primary w-100 py-2 mt-3 fw-bold">
-                                Xác nhận đăng ký &raquo;
-                            </button>
-                        </form>
-
-                    </div>
-                </div>
+                {% if form.errors %}
+                  <div class="alert alert-danger text-start">
+                    {{ form.non_field_errors }}
+                    {% for field in form %}
+                      {% if field.errors %}
+                        <small>{{ field.label }}: {{ field.errors|striptags }}</small><br />
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                {% for field in form %}
+                  <div class="mb-3 text-start">
+                    <label class="form-label fw-bold">{{ field.label }}</label>
+                    <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" value="{{ field.value|default:'' }}" placeholder="{{ field.label }}" />
+                  </div>
+                {% endfor %}
+                {% if redirect_field_value %}
+                  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+                <button type="submit" class="btn btn-primary w-100 py-2 mt-3 fw-bold">Xác nhận đăng ký &raquo;</button>
+              </form>
             </div>
+          </div>
         </div>
+      </div>
     </div>
-</section>
+  </section>
 {% endblock %}

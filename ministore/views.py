@@ -18,6 +18,33 @@ from django.contrib.auth import logout
 
 
 def home(request):
+    """
+        trang chủ của web.
+        Thực hiện load những sản phẩm của mobiphone và smartwatch
+    
+    """
+
+    # get all object: Product.objects.all()
+    # .select_related("category"): tối ưu truy vấn, lấy luôn category liên quan
+    # .filter(is_active=True): chỉ lấy sản phẩm đang kinh doanh
+    # nên sử dụng select_related để tối ưu truy vấn cho: 1-n relationship
+    # is_active: field trong model Product (phải kiểm tra xem nó có tồn tại trường này không)
+    # để truy vấn có AND: dùng .filter().filter() hoặc .filter(Q(...) & Q(...))
+    # hoặc: dùng .filter(a=1, b=2, c=3 ...)
+    # sử dụng OR: sử dụng Q objects: Q(a=1) | Q(b=2)
+    # --------------
+    # Q(name__icontains='mobile'): Quy ước chung:
+    # name: tên field trong model Product (nên kiêm tra nó có tồn tại không).
+    # icontains: tìm kiếm không phân biệt hoa thường (case-insensitive contains).
+
+    # ---------------------------
+    # Q(category__slug__icontains='mobile'):
+    # category: là field ForeignKey trong model Product
+    # slug: là field trong model Category (bảng liên quan)
+    # __: dấu gạch đôi nối để truy cập qua các bảng liên quan
+
+    # -created_ad: dấu trừ (-) đứng trước field nghĩa là sắp xếp giảm dần (mới nhất lên đầu)
+    # slicing: giới hạn số lượng kết quả trả về (tương tự LIMIT trong SQL)
 
     mobile_products = Product.objects.select_related('category').filter(
         is_active=True  # Chỉ lấy sản phẩm đang kinh doanh
@@ -41,18 +68,20 @@ def home(request):
         'mobile_products': mobile_products,
         'smart_products': smart_products,
     }
-
     return render(request, 'index.html', context)
 
-
-    return render(request, 'index.html')
-
 def register(request):
-    # Nếu đã đăng nhập thì đá về trang chủ, không cho đăng ký nữa
+    """
+        Xử lý đăng ký tài khoản mới.
+    """
+    # request.user.is_authenticated:
+    # =>true: đã đăng nhập.
+    # =>false: chưa đăng nhập.
     if request.user.is_authenticated:
         return redirect('home')
 
     if request.method == 'POST':
+
         # 1. Lấy dữ liệu
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -77,12 +106,12 @@ def register(request):
         # 3. Tạo User
         try:
             new_user = User.objects.create_user(username=username, email=email, password=password)
-            
+            # auto tạo profile rỗng khi người dùng tạo 1 tài khoảng mới.
+            # sau đó vào bổ xung thông tin sau.
             # Cập nhật Profile (Signal đã tạo profile, giờ ta update)
             if hasattr(new_user, 'profile'):
                 new_user.profile.phone_number = phone
-                new_user.profile.save()
-            
+                new_user.profile.save() # save
             messages.success(request, "Đăng ký thành công! Vui lòng đăng nhập.")
             # Chuyển sang tab login để người dùng nhập lại
             return redirect('login') 
@@ -95,30 +124,37 @@ def register(request):
     return render(request, 'register.html', {'active_tab': 'register'})
 
 def login_view(request):
+    """
+        Xử lý đăng nhập.
+    """
     if request.user.is_authenticated:
         return redirect('home')
-
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         
         # 1. Lưu lại session key của khách vãng lai TRƯỚC khi login
         # (Vì sau khi login, Django có thể đổi session key để bảo mật)
+        #get session key: request.session.session_key
         anonymous_session_key = request.session.session_key
         
+        # Mục đích: kiểm tra xem usser này có đúng không trong database.
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
+            # thực hiện lưu user này (ghi nhớ): cho phép
+            # người dùng di chuyển qua lại giữa các trang mà không cần phải đăng nhập lại từ đầu.
             login(request, user)
-            
-            # --- START LOGIC GỘP GIỎ HÀNG (SÁNG TẠO) ---
             # Ý tưởng: Tìm giỏ hàng của session cũ, gán nó cho User mới đăng nhập
             if anonymous_session_key:
                 try:
                     # Tìm giỏ hàng "vô chủ" của session cũ
+                    # user__isnull=True: chỉ lấy giỏ hàng không gắn với user nào
+                    # get: lấy 1 bản ghi.
                     guest_cart = Cart.objects.get(session_key=anonymous_session_key, user__isnull=True)
                     
                     # Tìm hoặc tạo giỏ hàng của User
+                    # Thực hiện tìm nếu ko thấy thì tạo mới.
                     user_cart, created = Cart.objects.get_or_create(user=user)
                     
                     # Chuyển từng món đồ từ Guest Cart -> User Cart
@@ -126,24 +162,29 @@ def login_view(request):
                         # Kiểm tra xem món này đã có trong giỏ User chưa
                         existing_item = CartItem.objects.filter(cart=user_cart, product=item.product).first()
                         if existing_item:
-                            existing_item.quantity += item.quantity
+                            existing_item.quantity += item.quantity # Cộng dồn số lượng default: 1
                             existing_item.save()
                         else:
                             # Nếu chưa có thì đổi chủ sở hữu sang User Cart
                             item.cart = user_cart
                             item.save()
-                    
                     # Xóa giỏ hàng tạm sau khi đã chuyển hết đồ
                     guest_cart.delete()
-                    
+
                 except Cart.DoesNotExist:
                     pass # Không có giỏ hàng tạm thì thôi
             # --- END LOGIC ---
 
             messages.success(request, f"Chào mừng {username} quay trở lại!")
             
+            # lấy next url nếu có
             next_url = request.GET.get('next')
 
+
+            # nếu là admin hoặc nhân viên thì trả thẳng về trang quản lý.
+            # redirect(admin:index)
+            # trong file urls.py của my_store: có admin,...
+            # hiện tại ta đang trong minisotre. Để backs về thực hiện: đảo ngược url.
             if user.is_staff or user.is_superuser: # Nếu là staff/admin
                 if next_url:
                     return redirect(next_url)
@@ -152,39 +193,56 @@ def login_view(request):
                 if next_url:
                     return redirect(next_url)
                 return redirect('home')
+        
+        # user is None: đăng nhập thất bại
         else:
             messages.error(request, "Sai tài khoản hoặc mật khẩu!")
             return render(request, 'register.html', {'active_tab': 'login'})
-            
+    
+    # {'active_tab': 'login'}: ở bên html hứng nó bằng biến active_tab.
     return render(request, 'register.html', {'active_tab': 'login'})
 
 
 def logout_user(request):
-    logout(request)
-    messages.success(request, "Đã đăng xuất thành công.")
-    return redirect('login')
+    """
+        Xử lý đăng xuất.
+    """
+
+    # đang ở trạng thái đăng nhập thì mới thực hiện logout.
+    if request.user.is_authenticated:
+        # tương tự nhue login ở view/login_view:
+        # thực hiện xóa bỏ session key hiện tại.
+        logout(request)
+        messages.success(request, "Đã đăng xuất thành công.")
+    # khi chưa đăng nhập thì trả về trang login.
+    else:
+        messages.success(request, "Bạn chưa đăng nhập")
+
+    # khi bấm đăng xuất luôn luôn trả về trang login để thực hiện đăng nhập.
+    return redirect("login")
+
 
 # có thể bỏ.
 def auth_view(request):
     return render(request, 'register.html', {'active_tab': 'login'})
 
 
-
-
-
 def shop(request):
     # 1. Lấy dữ liệu gốc
     # products = Product.objects.all()
+    # Trong Product không có column giá hiện tài chỉ có 2 cột giá sale và giá gốc: vì thế tạo ra 1 cột ảo(curent_price) để tính giá.
+    # Coalesce('sale_price', 'base_price')
+
     products = Product.objects.filter(is_active=True).annotate(
         current_price=Coalesce('sale_price', 'base_price')
     )
     categories = Category.objects.all()
 
     # 2. Lấy tham số từ URL (Method GET)
-    category_slug = request.GET.get('category',"") 
-    search_query = request.GET.get('q', "")
-    min_price = request.GET.get('min_price',"")
-    max_price = request.GET.get('max_price',"")
+    category_slug = request.GET.get('category',"")  # nếu tồn tại category: trả về value tương úng, còn không trả về chuổi rỗng
+    search_query = request.GET.get('q', "")         # ~~~~
+    min_price = request.GET.get('min_price',"")     #~~~~
+    max_price = request.GET.get('max_price',"")     #~~~~
 
     # 3. Áp dụng bộ lọc (Logic lọc tuần tự)
     # Lọc theo danh mục
@@ -200,19 +258,19 @@ def shop(request):
     # Lọc theo giá (Bây giờ ta có thể dùng current_price đã annotate)
     if min_price:
         try:
+            # current_price__gte: Greater Than or Equal to: lớn hơn hoặc bằng
             products = products.filter(current_price__gte=float(min_price))
         except ValueError:
-            pass # Bỏ qua nếu user nhập chữ
+            pass # Bỏ qua nếu user nhập string
 
     if max_price:
         try:
+            #lte: Less Than or Equal to : nhỏ hơn hoặc bằng
             products = products.filter(current_price__lte=float(max_price))
         except ValueError:
             pass
-    
-    paginator = Paginator(products, 6)  # Hiển thị 6 sản phẩm mỗi trang
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+
+    # thực hiện phân trang....
 
     context = {
         'products': products,
@@ -223,34 +281,37 @@ def shop(request):
         'min_price': min_price, 
         'max_price': max_price
     }
+
     return render(request, 'shop.html', context)
 
 
 
 def product_detail(request, slug):
+    """
+        Hiển thị chi tiết một sản phẩm dựa trên slug.
+    """
     product = get_object_or_404(Product, slug=slug, is_active=True)
 
-    # 3. Tăng lượt xem (Optional - Sáng tạo thêm)
+    # Tăng lượt xem
     # Logic: Mỗi khi có người vào xem, ta tăng biến đếm này lên. 
     # Giúp bạn thống kê được sản phẩm nào đang "hot".
-    product.views_count += 1
-    product.save()
+    try:
+        product.views_count += 1
+        product.save()
+    except Exception as e:
+        pass # Nếu có lỗi gì thì bỏ qua không làm ảnh hưởng trải nghiệm người dùng
 
     context = {
         'product': product,
     }
     return render(request, 'single-product.html', context)
 
-
-
-
-
-
-
+# Người đang mua hàng này là ai
+# cái giỏ của họ đang nằm ở đâu trong kho dữ liệu
 def _get_cart(request):
     """
-    Hàm bổ trợ (Private helper): Lấy hoặc tạo giỏ hàng dựa trên trạng thái đăng nhập.
-    Đây là cốt lõi của việc phân định "Lưu" hay "Không lưu" (tạm thời).
+        Hàm bổ trợ (Private helper): Lấy hoặc tạo giỏ hàng dựa trên trạng thái đăng nhập.
+        Đây là cốt lõi của việc phân định "Lưu" hay "Không lưu" (tạm thời).
     """
     if request.user.is_authenticated:
         # Nếu đã đăng nhập: Lấy giỏ hàng theo User (Lưu vĩnh viễn)
@@ -260,6 +321,7 @@ def _get_cart(request):
         if not request.session.session_key:
             request.session.create()
         
+        # tạo 1 session ép bu
         session_key = request.session.session_key
         cart, created = Cart.objects.get_or_create(
             session_key=session_key, 
@@ -268,6 +330,7 @@ def _get_cart(request):
     return cart
 
 def add_to_cart(request, product_id):
+    """Thêm sản phẩm vào giỏ hàng"""
     product = get_object_or_404(Product, id=product_id)
     cart = _get_cart(request)
 

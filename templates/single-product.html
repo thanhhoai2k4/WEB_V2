@@ -108,3 +108,53 @@
     </div>
   </div>
 {% endblock %}
+
+{% block smart_watches %}
+  <section class="related-products py-5 bg-light">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold">Có thể bạn sẽ thích</h3>
+        <a href="{% url 'shop' %}" class="btn btn-outline-primary btn-sm">Xem tất cả</a>
+      </div>
+
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% for item in related_products %}
+          <div class="col">
+            <div class="card h-100 border-0 shadow-sm product-card">
+              <div class="position-relative overflow-hidden">
+                <a href="{% url 'product_detail' item.slug %}">
+                  {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 250px; object-fit: contain;" />
+                  {% else %}
+                    <img src="https://via.placeholder.com/250" class="card-img-top" alt="No Image" />
+                  {% endif %}
+                </a>
+
+                {% if item.sale_price and item.sale_price < item.base_price %}
+                  <span class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 m-2 rounded small">Sale</span>
+                {% endif %}
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title text-truncate"><a href="{% url 'product_detail' item.slug %}" class="text-decoration-none text-dark">{{ item.name }}</a></h5>
+
+                <div class="d-flex align-items-center mt-2">
+                  <span class="fw-bold text-primary me-2">{{ item.real_price|floatformat:0 }}đ</span>
+                  {% if item.sale_price and item.sale_price < item.base_price %}
+                    <span class="text-muted text-decoration-line-through small">{{ item.base_price|floatformat:0 }}đ</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="card-footer bg-white border-top-0">
+                <a href="{% url 'product_detail' item.slug %}" class="btn btn-primary w-100 btn-sm">Xem chi tiết</a>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted">Chưa có sản phẩm tương tự nào.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endblock %}

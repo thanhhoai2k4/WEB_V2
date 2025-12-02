@@ -13,6 +13,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic.detail import DetailView
 
+# gmail
+from django.core.mail import send_mail
+
 from .forms import (
     FormTest,
     OrderForm,
@@ -30,6 +33,9 @@ from .models import (
     UserProfile,
 )
 
+
+from django.core.mail import send_mail
+from django.conf import settings
 
 def home(request):
     """
@@ -315,8 +321,33 @@ def product_detail(request, slug):
     except Exception as e:
         pass # Nếu có lỗi gì thì bỏ qua không làm ảnh hưởng trải nghiệm người dùng
 
+    
+    # tìm các sản phẩm liên quan trong cùng danh mục.
+
+    # lấy thông tin sản phẩm hiện tại
+    # productname = product.name
+    # prodcutcategory = product.category.name
+    current_real_price = product.sale_price if product.sale_price else product.base_price  # sử dụng property price trong model Product
+
+    min_price = float(current_real_price) * 0.85 
+    max_price = float(current_real_price) * 1.15
+
+    related_products = Product.objects.filter(is_active=True).annotate(
+        real_price=Coalesce('sale_price', 'base_price')
+    ).exclude(
+        id=product.id # QUAN TRỌNG: Không gợi ý lại chính sản phẩm đang xem
+    ).filter( # .filter is an and
+        # | Logic OR:
+        # 1. Hoặc là cùng danh mục (cùng hãng/loại)
+        # 2. Hoặc là có mức giá tương đồng (đối thủ cạnh tranh khác hãng)
+        Q(category=product.category) | 
+        Q(real_price__range=(min_price, max_price))
+    ).order_by('?')[:4] # order_by('?'): Lấy ngẫu nhiên để mỗi lần F5 khách thấy gợi ý mới lạ hơn
+
+
     context = {
-        'product': product,
+        "product": product,
+        "related_products" : related_products,
     }
     return render(request, 'single-product.html', context)
 
@@ -549,7 +580,34 @@ def checkout(request):
                     quantity=item.quantity,
                     price=item.product.price # Quan trọng: Lưu giá tại thời điểm mua
                 )
-                
+
+            try:
+                #send email to user when order success
+                subject = f"Xác nhận đơn hàng #{order.id} từ MiniStore"
+                message = f"""
+                        Chào {request.user.last_name} {request.user.first_name},
+
+                        Cảm ơn bạn đã đặt hàng tại MiniStore.
+                        Mã đơn hàng của bạn là: #{order.id}
+                        Tổng tiền: {total_bill:,.0f} VND
+                        Phương thức thanh toán: {order.payment_method}
+
+                        Chúng tôi sẽ sớm liên hệ để giao hàng.
+                        Trân trọng.
+                        """
+                    
+                email_from = settings.EMAIL_HOST_USER
+                recipient_list = [request.user.email, ] # Gửi đến email đăng ký của user
+
+                num_sent = send_mail(subject, message, email_from, recipient_list)
+                if num_sent > 0:
+                    print("gui mail thanh cong!")
+                else:
+                    print("gui that bai!")
+            except Exception as e:
+                pass # nếu lỗi thì bỏ qua ko ảnh hưởng trải nghiệm người dùng
+
+
                 # Trừ kho (Optional - logic nâng cao)
                 # item.product.stock -= item.quantity
                 # item.product.save()

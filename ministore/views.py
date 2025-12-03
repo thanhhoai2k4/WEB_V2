@@ -582,43 +582,43 @@ def checkout(request):
                     price=item.product.price # Quan trọng: Lưu giá tại thời điểm mua
                 )
 
-            # try:
-            #     #send email to user when order success
-            #     subject = f"Xác nhận đơn hàng #{order.id} từ MiniStore"
-            #     message = f"""
-            #             Chào {request.user.last_name} {request.user.first_name},
-
-            #             Cảm ơn bạn đã đặt hàng tại MiniStore.
-            #             Mã đơn hàng của bạn là: #{order.id}
-            #             Tổng tiền: {total_bill:,.0f} VND
-            #             Phương thức thanh toán: {order.payment_method}
-
-            #             Chúng tôi sẽ sớm liên hệ để giao hàng.
-            #             Trân trọng.
-            #             """
-                    
-            #     email_from = settings.EMAIL_HOST_USER
-            #     recipient_list = [request.user.email, ] # Gửi đến email đăng ký của user
-
-            #     num_sent = send_mail(subject, message, email_from, recipient_list)
-            #     if num_sent > 0:
-            #         print("gui mail thanh cong!")
-            #     else:
-            #         print("gui that bai!")
-            # except Exception as e:
-            #     pass # nếu lỗi thì bỏ qua ko ảnh hưởng trải nghiệm người dùng
-
-
             try:
-                send_order_confirmation_email_task.delay(
-                order_id=order.id,
-                user_email=request.user.email,
-                user_last_name=request.user.last_name,
-                user_first_name=request.user.first_name
-            )
+                #send email to user when order success
+                subject = f"Xác nhận đơn hàng #{order.id} từ MiniStore"
+                message = f"""
+                        Chào {request.user.last_name} {request.user.first_name},
 
+                        Cảm ơn bạn đã đặt hàng tại MiniStore.
+                        Mã đơn hàng của bạn là: #{order.id}
+                        Tổng tiền: {total_bill:,.0f} VND
+                        Phương thức thanh toán: {order.payment_method}
+
+                        Chúng tôi sẽ sớm liên hệ để giao hàng.
+                        Trân trọng.
+                        """
+                    
+                email_from = settings.EMAIL_HOST_USER
+                recipient_list = [request.user.email, ] # Gửi đến email đăng ký của user
+
+                num_sent = send_mail(subject, message, email_from, recipient_list)
+                if num_sent > 0:
+                    print("gui mail thanh cong!")
+                else:
+                    print("gui that bai!")
             except Exception as e:
-                pass
+                pass # nếu lỗi thì bỏ qua ko ảnh hưởng trải nghiệm người dùng
+
+
+            # try:
+            #     send_order_confirmation_email_task.delay(
+            #     order_id=order.id,
+            #     user_email=request.user.email,
+            #     user_last_name=request.user.last_name,
+            #     user_first_name=request.user.first_name
+            # )
+
+            # except Exception as e:
+            #     pass
 
 
                 # Trừ kho (Optional - logic nâng cao)

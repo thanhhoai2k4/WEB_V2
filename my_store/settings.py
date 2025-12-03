@@ -67,7 +67,7 @@ INTERNAL_IPS = [
 ]
 
 
-ROOT_URLCONF = "my_store.urls"
+ROOT_URLCONF = "my_store.urls" # root
 
 TEMPLATES = [
     {
@@ -82,7 +82,7 @@ TEMPLATES = [
                 "ministore.context_processors.cart_count",
             ],
         },
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        'DIRS': [os.path.join(BASE_DIR, 'templates')] # nhan dang duoc templates o ben ngoai ngang hang voi manage.py
     },
 ]
 
@@ -91,7 +91,7 @@ WSGI_APPLICATION = "my_store.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
+# cau hinh database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -127,18 +127,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = "/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -148,17 +143,20 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 
-
+# khi debug chúng ta truy cập static ở dạng 127.0.0.1/static
+# khi người dùng thì họ thấy domainnaem.com/staic
+# cần quy ước chung
 STATIC_URL = 'static/'
-
 # Dòng này nói cho Django biết: "Ngoài các app con, hãy tìm static file ở thư mục gốc này nữa"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-
+# nơi lưu trữ các ảnh trong database.
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
 
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
@@ -197,8 +195,7 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
-ACCOUNT_EMAIL_VERIFICATION = "none" # khong can xac thuc email
-
+ACCOUNT_EMAIL_VERIFICATION = "none" # khong can xac thuc email vì email đả xác thức rồi
 
 
 
@@ -209,4 +206,11 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True  # Sử dụng mã hóa TLS để bảo mật đường truyền
 EMAIL_HOST_USER = 'disbray100@gmail.com'  # Thay bằng email của bạn
-EMAIL_HOST_PASSWORD = 'lvkvqnsfivrnflcx'
+EMAIL_HOST_PASSWORD = 'lvkvqnsfivrnflcx' # lay o app password
+
+
+# Cấu hình VNPay Sandbox dành cho việt thanh toán qua vnpay.
+VNPAY_TMN_CODE = 'CGXZLS0Z'  # Mã website thử nghiệm (có thể thay đổi tùy tài khoản)
+VNPAY_HASH_SECRET = 'XNBCJFAKRNQTXGZJHKGACMZZDRTSQLUO' # Chuỗi bí mật để tạo checksum
+VNPAY_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
+VNPAY_RETURN_URL = "http://localhost:8000/payment_return" # URL nhận kết quả trả về

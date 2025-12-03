@@ -221,8 +221,8 @@ VNPAY_RETURN_URL = "http://localhost:8000/payment_return" # URL nhận kết qu�
 
 # cau hinh cho gui email qua redis
 # CELERY SETTINGS
-CELERY_BROKER_URL = 'redis://localhost:6380/0' # Đường dẫn tới Redis Server
-CELERY_RESULT_BACKEND = 'redis://localhost:6380/0' # Lưu kết quả trả về (nếu cần)
+CELERY_BROKER_URL = 'redis://localhost:6379/0' # Đường dẫn tới Redis Server
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0' # Lưu kết quả trả về (nếu cần)
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

@@ -214,3 +214,16 @@ VNPAY_TMN_CODE = 'CGXZLS0Z'  # Mã website thử nghiệm (có thể thay đổi
 VNPAY_HASH_SECRET = 'XNBCJFAKRNQTXGZJHKGACMZZDRTSQLUO' # Chuỗi bí mật để tạo checksum
 VNPAY_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
 VNPAY_RETURN_URL = "http://localhost:8000/payment_return" # URL nhận kết quả trả về
+
+
+
+
+
+# cau hinh cho gui email qua redis
+# CELERY SETTINGS
+CELERY_BROKER_URL = 'redis://localhost:6380/0' # Đường dẫn tới Redis Server
+CELERY_RESULT_BACKEND = 'redis://localhost:6380/0' # Lưu kết quả trả về (nếu cần)
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Ho_Chi_Minh'

@@ -6,8 +6,11 @@
     <div class="row">
         <div class="col-md-3">
             <div class="card shadow-sm mb-4">
+
+
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Bộ lọc tìm kiếm</h5>
+                    
                 </div>
                 <div class="card-body">
                     <form method="GET" action="{% url 'shop' %}">
@@ -52,11 +55,20 @@
 
         <div class="col-md-9">
             <h3 class="mb-4">Danh sách sản phẩm</h3>
+            <select id="sort-select" class="form-select w-auto">
+                <option value="default">Mặc định</option>
+                <option value="price-asc">Giá: Thấp đến Cao</option>
+                <option value="price-desc">Giá: Cao đến Thấp</option>
+                <option value="name-asc">Tên: A-Z</option>
+                <option value="name-desc">Tên: Z-A</option>
+            </select>
             
             {% if products %}
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 {% for product in products %}
-                <div class="col">
+                <div class="col product-item" 
+                    data-price="{% if product.discount_price %}{{ product.discount_price }}{% else %}{{ product.price }}{% endif %}" 
+                    data-name="{{ product.name }}">
                     <div class="card h-100 shadow-sm product-card">
                         {% if product.image %}
                         <div style="height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
@@ -104,4 +116,45 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sortSelect = document.getElementById('sort-select');
+        const productContainer = document.querySelector('.row-cols-1.row-cols-md-3'); // Chọn thẻ cha chứa các sản phẩm
+        
+        sortSelect.addEventListener('change', function() {
+            const sortValue = this.value;
+            // 1. Lấy danh sách tất cả các thẻ sản phẩm (.product-item)
+            const products = Array.from(productContainer.querySelectorAll('.product-item'));
+
+            // 2. Thực hiện sắp xếp mảng dựa trên value đã chọn
+            products.sort((a, b) => {
+                // Lấy giá trị từ data attribute
+                const priceA = parseFloat(a.getAttribute('data-price'));
+                const priceB = parseFloat(b.getAttribute('data-price'));
+                const nameA = a.getAttribute('data-name').toLowerCase();
+                const nameB = b.getAttribute('data-name').toLowerCase();
+
+                switch(sortValue) {
+                    case 'price-asc':
+                        return priceA - priceB; // Giá tăng dần
+                    case 'price-desc':
+                        return priceB - priceA; // Giá giảm dần
+                    case 'name-asc':
+                        return nameA.localeCompare(nameB); // Tên A-Z
+                    case 'name-desc':
+                        return nameB.localeCompare(nameA); // Tên Z-A
+                    default:
+                        return 0; // Mặc định (giữ nguyên thứ tự ban đầu hoặc theo index)
+                }
+            });
+
+            // 3. Xóa các sản phẩm cũ và thêm lại theo thứ tự mới
+            productContainer.innerHTML = '';
+            products.forEach(product => {
+                productContainer.appendChild(product);
+            });
+        });
+    });
+</script>
 {% endblock %}

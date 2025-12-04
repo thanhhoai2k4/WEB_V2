@@ -60,6 +60,9 @@ class OrderForm(forms.ModelForm):
 
 
 
+
+
+
 class FormTest(forms.ModelForm):
     # user_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     # address =  forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))

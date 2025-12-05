@@ -1,0 +1,8 @@
+celery -A my_store worker --loglevel=info --pool=solo    # window khac linux: ko co fork
+
+http://127.0.0.1:8000/
+
+
+
+# xem redis co thuc thi thanh cong khong
+celery -A my_store flower

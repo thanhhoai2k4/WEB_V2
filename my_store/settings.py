@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-*i4fo44-)blj2(%j&6fbt1$7y0v#ooc2*c8w6a^s!)_b795h6+"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['mystore.com', 'www.mystore.com', '123.45.67.89']
+ALLOWED_HOSTS = ['mystore.com', 'www.mystore.com', '123.45.67.89', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -231,6 +231,6 @@ CELERY_TIMEZONE = 'Asia/Ho_Chi_Minh'
 
 
 
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# SECURE_SSL_REDIRECT = False
+# SESSION_COOKIE_SECURE = False
+# CSRF_COOKIE_SECURE = False

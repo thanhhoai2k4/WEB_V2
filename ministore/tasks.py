@@ -31,7 +31,7 @@ def send_order_confirmation_email_task(order_id, user_email, user_last_name, use
 
         # Gửi mail (Hành động tốn thời gian này giờ đã nằm ở background)
         send_mail(subject, message, email_from, recipient_list)
-        
+        print(f"--- [SUCCESS] Đã gửi email thành công tới {user_email} ---") # In khi thành công
         return f"Email sent for Order #{order_id}"
 
     except Order.DoesNotExist:

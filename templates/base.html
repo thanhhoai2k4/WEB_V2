@@ -255,54 +255,44 @@
                   <a class="nav-link me-4" href="#company-services">Services</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link me-4" href="{% url "shop"%} ">Products</a>
+                  <a class="nav-link me-4" href="#mobile-products">Products</a>
                 </li>
-                {% comment %} <li class="nav-item">
-                  <a class="nav-link me-4" href="#smart-watches">Watches</a>
-                </li> {% endcomment %}
-                {% comment %} <li class="nav-item">
-                  <a class="nav-link me-4" href="#yearly-sale">Sale</a>
-                </li> {% endcomment %}
                 <li class="nav-item">
-                  <a class="nav-link me-4" href="{%  url "blog_list" %}">Blog</a>
+                  <a class="nav-link me-4" href="#smart-watches">Watches</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link me-4" href="#yearly-sale">Sale</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link me-4" href="#latest-blog">Blog</a>
                 </li>
                 <li class="nav-item dropdown">
                   <a class="nav-link me-4 dropdown-toggle link-dark" data-bs-toggle="dropdown" href="{% url "shop" %}" role="button" aria-expanded="false">Pages</a>
                   <ul class="dropdown-menu">
                     <li>
-                      <a href="{% url "about" %}" class="dropdown-item">About</a>
+                      <a href="about.html" class="dropdown-item">About</a>
                     </li>
                     <li>
-                      <a href="{% url "blog_list" %}" class="dropdown-item">Blog</a>
+                      <a href="blog.html" class="dropdown-item">Blog</a>
                     </li>
                     <li>
                       <a href="{% url "shop" %}" class="dropdown-item">Shop</a>
                     </li>
                     <li>
-                      <a href="{% url "view_cart" %}" class="dropdown-item">Cart</a>
+                      <a href="cart.html" class="dropdown-item">Cart</a>
                     </li>
                     <li>
-                      <a href="#" class="dropdown-item">Checkout</a>
+                      <a href="checkout.html" class="dropdown-item">Checkout</a>
                     </li>
                     <li>
-                      <a href="#" class="dropdown-item">Single Post</a>
+                      <a href="single-post.html" class="dropdown-item">Single Post</a>
                     </li>
                     <li>
-                      <a href="#" class="dropdown-item">Single Product</a>
+                      <a href="single-product.html" class="dropdown-item">Single Product</a>
                     </li>
                     <li>
-                      <a href="#" class="dropdown-item">Contact</a>
+                      <a href="contact.html" class="dropdown-item">Contact</a>
                     </li>
-                    <li>
-                      {% if user.is_superuser %}
-                        <a href="{% url "chi_tiet_nguoi_mua_hang" %}" class="dropdown-item">Chi Tiet Nguoi mua hang</a>
-                      {% endif %}
-                    </li>
-
-                    <li>
-                        <a href="{% url "formtest" %}" class="dropdown-item">form test nhap ten va address</a>
-                    </li>
-                    
                   </ul>
                 </li>
                 <li class="nav-item">
@@ -323,7 +313,7 @@
                                 <span class="ms-1 text-uppercase small">{{ request.user.username }}</span>
                               </a>
                               <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url "profile" %}">Thông tin tài khoản</a></li> <li><a class="dropdown-item" href="{% url "view_cart" %}">Đơn mua</a></li>
+                                <li><a class="dropdown-item" href="{% url "profile" %}">Thông tin tài khoản</a></li> <li><a class="dropdown-item" href="#">Đơn mua</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Đăng xuất</a></li>
                               </ul>
@@ -335,24 +325,13 @@
                             </a>
                           {% endif %}
                         </li>
-                      
-                        <li class="d-flex justify-content-between align-items-center position-relative">
-                            <a href="{% url 'view_cart' %}" class="cart position-relative d-inline-flex" aria-label="View your shopping cart">
-                                <svg class="cart-icon" width="24" height="24" viewBox="0 0 24 24">
-                                    <use xlink:href="#cart"></use>
-                                </svg>
-                                
-                                {% if cart_quantity > 0 %}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                                      style="font-size: 0.7rem; padding: 0.25em 0.5em;">
-                                    {{ cart_quantity }}
-                                </span>
-                                {% endif %}
-                                </a>
-                        </li>
-
-
-
+                      <li>
+                        <a href="{% url "view_cart" %}">
+                          <svg class="cart">
+                            <use xlink:href="#cart"></use>
+                          </svg>
+                        </a>
+                      </li>
                     </ul>
                   </div>
                 </li>
@@ -604,13 +583,13 @@
                       <a href="#">Home</a>
                     </li>
                     <li class="menu-item pb-2">
-                      <a href="{% url "about" %}">About</a>
+                      <a href="#">About</a>
                     </li>
                     <li class="menu-item pb-2">
                       <a href="#">Shop</a>
                     </li>
                     <li class="menu-item pb-2">
-                      <a href="{% url "blog_list" %}">Blogs</a>
+                      <a href="#">Blogs</a>
                     </li>
                     <li class="menu-item pb-2">
                       <a href="#">Contact</a>

@@ -38,6 +38,11 @@ from .models import (
 from django.core.mail import send_mail
 from django.conf import settings
 
+from .tasks import send_login_notification_task
+from django.utils import timezone
+
+
+
 def home(request):
     """
         trang chủ của web.
@@ -166,6 +171,19 @@ def login_view(request):
             # thực hiện lưu user này (ghi nhớ): cho phép
             # người dùng di chuyển qua lại giữa các trang mà không cần phải đăng nhập lại từ đầu.
             login(request, user)
+
+            # send email
+            x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+            ip_addr = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+            send_login_notification_task.delay(
+                username=user.username, 
+                email=user.email,
+                ip_address=ip_addr,
+                login_time=timezone.now().strftime("%H:%M:%S %d/%m/%Y")
+        )
+
+
+
             # Ý tưởng: Tìm giỏ hàng của session cũ, gán nó cho User mới đăng nhập
             if anonymous_session_key:
                 try:
@@ -581,35 +599,6 @@ def checkout(request):
                     quantity=item.quantity,
                     price=item.product.price # Quan trọng: Lưu giá tại thời điểm mua
                 )
-
-            # thực hiện gửi bằng gmail thông thường làm việc theo kiểu tuần tự=>làm chậm server
-            #vì thế nên sử dụn redis: nó là 1 server dùng dể gửi gmail. => nhanh.
-            # try:
-            #     #send email to user when order success
-            #     subject = f"Xác nhận đơn hàng #{order.id} từ MiniStore"
-            #     message = f"""
-            #             Chào {request.user.last_name} {request.user.first_name},
-
-            #             Cảm ơn bạn đã đặt hàng tại MiniStore.
-            #             Mã đơn hàng của bạn là: #{order.id}
-            #             Tổng tiền: {total_bill:,.0f} VND
-            #             Phương thức thanh toán: {order.payment_method}
-
-            #             Chúng tôi sẽ sớm liên hệ để giao hàng.
-            #             Trân trọng.
-            #             """
-                    
-            #     email_from = settings.EMAIL_HOST_USER
-            #     recipient_list = [request.user.email, ] # Gửi đến email đăng ký của user
-
-            #     num_sent = send_mail(subject, message, email_from, recipient_list)
-            #     if num_sent > 0:
-            #         print("gui mail thanh cong!")
-            #     else:
-            #         print("gui that bai!")
-            # except Exception as e:
-            #     pass # nếu lỗi thì bỏ qua ko ảnh hưởng trải nghiệm người dùng
-
 
             try:
                 send_order_confirmation_email_task.delay(

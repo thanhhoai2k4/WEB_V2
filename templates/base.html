@@ -266,6 +266,12 @@
                 <li class="nav-item">
                   <a class="nav-link me-4" href="#latest-blog">Blog</a>
                 </li>
+                  <li class="nav-item">
+                  <a href="{% url 'compare_view' %}" class="nav-link">
+                        So sánh <span class="badge bg-warning text-dark">{{ request.session.compare_list|length }}</span>
+                    </a>
+                </li>
+
                 <li class="nav-item dropdown">
                   <a class="nav-link me-4 dropdown-toggle link-dark" data-bs-toggle="dropdown" href="{% url "shop" %}" role="button" aria-expanded="false">Pages</a>
                   <ul class="dropdown-menu">

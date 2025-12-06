@@ -56,6 +56,9 @@
         <div class="d-flex gap-2 mb-4">
           <input type="number" class="form-control" value="1" min="1" max="{{ product.stock }}" style="width: 80px;" />
           <button class="btn btn-primary flex-grow-1"><a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary"><i class="bi bi-cart-plus"></i> Thêm vào giỏ</a></button>
+            <a href="{% url 'toggle_compare' product.id %}" class="btn btn-info flex-grow-1 py-2 text-white shadow-sm ms-2">
+                <i class="fa fa-exchange"></i> So sánh
+            </a>
         </div>
 
         {% if product.specifications %}

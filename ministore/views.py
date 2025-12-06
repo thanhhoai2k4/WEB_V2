@@ -364,6 +364,13 @@ def product_detail(request, slug):
     ).order_by('?')[:4] # order_by('?'): Lấy ngẫu nhiên để mỗi lần F5 khách thấy gợi ý mới lạ hơn
 
 
+    # tang view
+    try:
+        product.views_count += 1
+        product.save()
+    except Exception as e:
+        print(e)
+
     context = {
         "product": product,
         "related_products" : related_products,

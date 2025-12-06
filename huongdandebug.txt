@@ -2,3 +2,13 @@ Khi thực hiện debug để xem thông tin của các object:
 - prodcuts[0].__dict__ 
 
 Nên viết 1 hàm để xuất các các tài sản của object.
+
+
+
+6/12/2025:
+
+- thêm logic đăng nhập bằng gmail.
+- sử dụng redis và celery để tạo ra 1 tiếng trình con để thực hiện các nhiệm vụ ngầm. VD:
+    + Khi thực hiện gửi mail bằng server thì có thể bị lổi do nhiều lý do như: gmail ko đúng, mạng yếu, \
+    ... vì thế gay tốn thời gian cho người dùng. sử dụng 1 tiến trình con để nó tự động gửi.
+- 

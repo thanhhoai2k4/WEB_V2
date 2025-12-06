@@ -331,14 +331,34 @@ def product_detail(request, slug):
     """
     product = get_object_or_404(Product, slug=slug, is_active=True)
 
+
+    # get or create session
+    recently_viewed = request.session.get('recently_viewed', [])
+    recently_viewed.insert(0, product.id)
+    if product.id in recently_viewed:
+        recently_viewed.remove(product.id)
+    recently_viewed.insert(0, product.id)
+    if len(recently_viewed) > 6:
+        recently_viewed.pop()
+    request.session['recently_viewed'] = recently_viewed
+    viewed_products_qs = Product.objects.filter(
+        id__in=recently_viewed,
+        is_active=True
+    ).exclude(id=product.id)
+
+    viewed_products = sorted(
+        viewed_products_qs,
+        key=lambda x: recently_viewed.index(x.id) if x.id in recently_viewed else 999
+    )
+
     # Tăng lượt xem
     # Logic: Mỗi khi có người vào xem, ta tăng biến đếm này lên. 
     # Giúp bạn thống kê được sản phẩm nào đang "hot".
-    try:
-        product.views_count += 1
-        product.save()
-    except Exception as e:
-        pass # Nếu có lỗi gì thì bỏ qua không làm ảnh hưởng trải nghiệm người dùng
+    # try:
+    #     product.views_count += 1
+    #     product.save()
+    # except Exception as e:
+    #     pass # Nếu có lỗi gì thì bỏ qua không làm ảnh hưởng trải nghiệm người dùng
 
     
     # tìm các sản phẩm liên quan trong cùng danh mục.
@@ -374,6 +394,7 @@ def product_detail(request, slug):
     context = {
         "product": product,
         "related_products" : related_products,
+        "viewed_products" : viewed_products,
     }
     return render(request, 'single-product.html', context)
 

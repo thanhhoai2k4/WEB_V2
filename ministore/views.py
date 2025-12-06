@@ -782,3 +782,70 @@ def form_test(request):
     context['form'] = form
     return render(request, 'test_form_l3.html', context)
 
+
+
+# so sanh
+def toggle_compare(request, product_id):
+    """
+    Logic: Thêm hoặc xóa sản phẩm khỏi danh sách so sánh (Session).
+    Sáng tạo: Giới hạn chỉ cho phép so sánh tối đa 3-4 sản phẩm để giao diện không bị vỡ.
+    """
+    # Lấy danh sách ID từ session, nếu chưa có thì tạo list rỗng
+    compare_list = request.session.get('compare_list', [])
+
+    # Ép kiểu về int để đảm bảo đồng nhất dữ liệu
+    product_id = int(product_id)
+
+    if product_id in compare_list:
+        # Nếu có rồi thì xóa đi (Toggle)
+        compare_list.remove(product_id)
+        messages.info(request, "Đã bỏ sản phẩm khỏi danh sách so sánh.")
+    else:
+        # Nếu chưa có thì thêm vào
+        if len(compare_list) >= 3:  # Giới hạn 3 sản phẩm
+            messages.warning(request, "Bạn chỉ có thể so sánh tối đa 3 sản phẩm!")
+        else:
+            compare_list.append(product_id)
+            messages.success(request, "Đã thêm vào so sánh.")
+
+    # Lưu lại vào session
+    request.session['compare_list'] = compare_list
+
+    # Trả về trang cũ
+    return redirect(request.META.get('HTTP_REFERER', 'home'))
+
+
+def compare_view(request):
+    """
+    View hiển thị bảng so sánh.
+    Logic phức tạp: Xử lý JSONField để đồng bộ các dòng thông số kỹ thuật.
+    """
+    compare_list = request.session.get('compare_list', [])
+
+    # Lấy các object Product từ list ID
+    products = Product.objects.filter(id__in=compare_list)
+
+    # Nếu không có sản phẩm nào
+    if not products:
+        messages.warning(request, "Chưa có sản phẩm nào để so sánh!")
+        return redirect('shop')
+
+    # --- THUẬT TOÁN HỢP CÁC KHÓA (KEY UNION) ---
+    # Mục đích: Tìm ra tất cả các tiêu chí kỹ thuật có thể có.
+    # Ví dụ: SP A có {Pin, Ram}, SP B có {Ram, Màn hình}
+    # => Kết quả cần: [Pin, Ram, Màn hình] để vẽ bảng.
+
+    all_specs_keys = set()
+    for product in products:
+        if product.specifications:
+            # Lấy tất cả các keys trong JSON của sản phẩm này update vào set tổng
+            all_specs_keys.update(product.specifications.keys())
+
+    # Sắp xếp lại keys cho đẹp (hoặc quy định thứ tự ưu tiên nếu muốn nâng cao)
+    sorted_keys = sorted(list(all_specs_keys))
+
+    context = {
+        'products': products,
+        'specs_keys': sorted_keys,
+    }
+    return render(request, 'compare.html', context)

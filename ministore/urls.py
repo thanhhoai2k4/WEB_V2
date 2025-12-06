@@ -58,7 +58,9 @@ urlpatterns = [
 
 
 
-
+    # so sanh
+    path('toggle-compare/<int:product_id>/', views.toggle_compare, name='toggle_compare'),
+    path('compare/', views.compare_view, name='compare_view'),
 
 ]
 

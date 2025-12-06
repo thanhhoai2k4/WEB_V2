@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block mobile_products %}
+<div class="container py-5">
+    <h2 class="text-center mb-4 text-uppercase fw-bold">So sánh sản phẩm</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped text-center align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 20%;">Tiêu chí</th>
+                    {% for product in products %}
+                    <th style="width: {{ 80|divisibleby:products.count }}%;">
+                        {{ product.name }}
+                        <a href="{% url 'toggle_compare' product.id %}" class="text-danger ms-2" title="Xóa">
+                            <i class="fa fa-times-circle"></i>
+                        </a>
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="fw-bold">Hình ảnh</td>
+                    {% for product in products %}
+                    <td>
+                        <a href="{% url 'product_detail' product.slug %}">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="height: 150px; object-fit: contain;">
+                            {% else %}
+                            <img src="https://via.placeholder.com/150" alt="No Image">
+                            {% endif %}
+                        </a>
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <tr>
+                    <td class="fw-bold">Giá bán</td>
+                    {% for product in products %}
+                    <td class="text-primary fw-bold">
+                        {{ product.price|floatformat:0 }} đ
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <tr>
+                    <td class="fw-bold">Tồn kho</td>
+                    {% for product in products %}
+                    <td>
+                        {% if product.stock > 0 %}
+                            <span class="badge bg-success">Còn hàng</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Hết hàng</span>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <tr class="table-info">
+                    <td colspan="{{ products.count|add:1 }}" class="fw-bold text-start">Thông số chi tiết</td>
+                </tr>
+
+                {% for key in specs_keys %}
+                <tr>
+                    <td class="fw-bold text-capitalize">{{ key }}</td>
+                    {% for product in products %}
+                    <td>
+                        {# Dùng filter default để xử lý trường hợp SP này không có key đó #}
+                        {# Cách truy cập dynamic key trong Django template hơi khó, nên ta dùng custom filter hoặc view xử lý #}
+                        {# NHƯNG cách đơn giản nhất là dùng get trong view hoặc templatetag. Ở đây tôi dùng cú pháp an toàn #}
+
+                        {{ product.specifications|get_item:key|default:"---" }}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+
+                <tr>
+                    <td></td>
+                    {% for product in products %}
+                    <td>
+                        <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-sm">
+                            <i class="fa fa-shopping-cart"></i> Thêm vào giỏ
+                        </a>
+                    </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'shop' %}" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left"></i> Tiếp tục xem sản phẩm
+        </a>
+    </div>
+</div>
+{% endblock %}

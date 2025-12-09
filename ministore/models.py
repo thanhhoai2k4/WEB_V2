@@ -6,8 +6,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist
-
-
+from treewidget.fields import TreeForeignKey
+from mptt.models import MPTTModel
 
 class Category(models.Model):
     name = models.CharField(max_length=200, unique=True, verbose_name="Tên danh mục")
@@ -37,11 +37,13 @@ class Category(models.Model):
             k = k.parent
         
         sorted(full_path)
-        return ' -> '.join(full_path[::-1])
+        # return ' -> '.join(full_path[::-1])
+        return self.name
 
-
-class Product(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+# class Product(models.Model):
+class Product(MPTTModel):
+    # category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+    category = TreeForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=255, verbose_name="Tên sản phẩm")
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     description = models.TextField(verbose_name="Mô tả chi tiết", blank=True)

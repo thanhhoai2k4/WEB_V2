@@ -6,18 +6,20 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist
-from treewidget.fields import TreeForeignKey
 
 
-class Category(models.Model):
+
+from mptt.models import MPTTModel, TreeForeignKey
+
+class Category(MPTTModel):
     name = models.CharField(max_length=200, unique=True, verbose_name="Tên danh mục")
     slug = models.SlugField(max_length=200, unique=True, blank=True, help_text="URL thân thiện cho SEO")
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     is_active = models.BooleanField(default=True, help_text="Tắt danh mục này thay vì xóa nó")
 
-    class Meta:
-        verbose_name_plural = "Categories"
+    class MPTTMeta:
+        order_insertion_by = ['name']
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -41,14 +43,7 @@ class Category(models.Model):
         return self.name
 
 class Product(models.Model):
-    # category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
-    category = TreeForeignKey(
-        'Category',
-        on_delete=models.CASCADE,
-        related_name='products',
-        verbose_name="Danh mục",
-        null=True, blank=True
-    )
+    category = TreeForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=255, verbose_name="Tên sản phẩm")
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     description = models.TextField(verbose_name="Mô tả chi tiết", blank=True)

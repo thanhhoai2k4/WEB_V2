@@ -7,3 +7,4 @@ jwt
 celery
 redis
 django-treewidget
+django-mptt

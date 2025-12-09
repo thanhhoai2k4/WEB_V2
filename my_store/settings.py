@@ -48,9 +48,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 
-
-    "treewidget",
     "mptt",
+    "treewidget",
 ]
 
 MIDDLEWARE = [

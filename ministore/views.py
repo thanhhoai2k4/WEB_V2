@@ -324,8 +324,17 @@ def shop(request):
         except ValueError:
             pass
 
+
+    sub_categories = []
+    selected_category = None
+
+    if category_slug:
+        selected_category = get_object_or_404(Category, slug=category_slug)
+        sub_categories = selected_category.children.filter(is_active=True)
+
     # thực hiện phân trang....
     
+
     context = {
         'products': products,
         'categories': categories,
@@ -333,15 +342,18 @@ def shop(request):
         'current_category': category_slug,
         'search_query': search_query,
         'min_price': min_price, 
-        'max_price': max_price
+        'max_price': max_price,
+        "sub_categories": sub_categories,
+        "selected_category": selected_category
     }
 
-
+    
 
     # thuc hien tim nhung thanh con khi doi tuong select:
     # product = get_object_or_404(Product, slug=category_slug, is_active=True)
     # all_children = father_cat.children.all()
 
+    
 
 
     return render(request, 'shop/shop.html', context)

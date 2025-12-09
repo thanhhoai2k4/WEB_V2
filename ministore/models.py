@@ -25,7 +25,19 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        """
+        Docstring for __str__
+        
+        :param self: Description
+        """
+        full_path = [self.name]
+        k = self.parent
+        while k is not None:
+            full_path.append(k.name)
+            k = k.parent
+        
+        sorted(full_path)
+        return ' -> '.join(full_path[::-1])
 
 
 class Product(models.Model):

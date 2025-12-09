@@ -22,16 +22,21 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Danh mục</label>
-                            <div class="form-check">
+                            {% comment %} <div class="form-check">
                                 <input class="form-check-input" type="radio" name="category" id="cat_all" value="" {% if not current_category %}checked{% endif %}>
                                 <label class="form-check-label" for="cat_all">Tất cả</label>
-                            </div>
+                            </div> {% endcomment %}
                             {% for cat in categories %}
                                 {% if cat.parent == None %}
+                            <a href="{% url 'shop' %}?category={{ cat.slug }}">
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="category" id="cat_{{ cat.id }}" value="{{ cat.name }}" {% if current_category == cat.slug %}checked{% endif %}>
-                                <label class="form-check-label" for="cat_{{ cat.id }}">{{ cat.name }}</label>
+                                {% comment %} <input class="form-check-input" type="radio" name="category" id="cat_{{ cat.id }}" value="{{ cat.slug }}" {% if current_category == cat.slug %}checked{% endif %}> {% endcomment %}
+                                {% comment %} <label class="form-check-label" for="cat_{{ cat.id }}">{{ cat.name }}</label> {% endcomment %}
+                                
+                                    {{ cat.name }}
+                                
                             </div>
+                            </a>
                                 {% endif %}
                             {% endfor %}
                         </div>
@@ -56,6 +61,15 @@
         </div>
 
         <div class="col-md-9">
+            
+            {% comment %} # thuc hien show duong dan
+            {%if breadcrumb_trail %}
+                <h1>xxx</h1>
+            {% endif %} {% endcomment %}
+            
+            <div>
+                
+            </div>
             <h3 class="mb-4">Danh sách sản phẩm</h3>
             <select id="sort-select" class="form-select w-auto">
                 <option value="default">Mặc định</option>
@@ -64,8 +78,53 @@
                 <option value="name-asc">Tên: A-Z</option>
                 <option value="name-desc">Tên: Z-A</option>
             </select>
+            <div class="col-md-9">
 
-            {% comment %} {%  %} {% endcomment %}
+    <nav aria-label="breadcrumb" class="mb-4 bg-light p-3 rounded shadow-sm">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'shop' %}" class="text-decoration-none">ministore</a></li>
+            {% if breadcrumb_trail %}
+                {% for cat in breadcrumb_trail %}
+                    {% if not forloop.last %}
+                        <li class="breadcrumb-item">
+                            <a href="?category={{ cat.slug }}" class="text-decoration-none">{{ cat.name }}</a>
+                        </li>
+                    {% else %}
+                        <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">
+                            {{ cat.name }}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <li class="breadcrumb-item active" aria-current="page">Tất cả sản phẩm</li>
+            {% endif %}
+        </ol>
+    </nav>
+    {% if sub_categories %}
+        <div class="mb-4 border-bottom pb-3">
+            <span class="text-muted small me-2">Dòng sản phẩm thuộc {{ active_category.name }}:</span>
+            <div class="d-flex flex-wrap gap-2 mt-1">
+                {% for sub in sub_categories %}
+                    <a href="?category={{ sub.slug }}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                        {{ sub.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+            {% if selected_category and sub_categories %}
+                <div class="mb-4 border-bottom pb-3">
+                    <p class="text-muted mb-2">Dang xem: <strong>{{ selected_category.name }}</strong></p>
+                    
+                    <div class="d-flex flex-wrap gap-3">
+                        {% for sub in sub_categories %}
+                            <a href="?category={{ sub.slug }}" class="text-decoration-none border rounded px-3 py-1 bg-light text-dark hover-shadow">
+                                {{ sub.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
 
             
             {% if products %}

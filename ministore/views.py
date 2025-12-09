@@ -300,8 +300,40 @@ def shop(request):
 
     # 3. Áp dụng bộ lọc (Logic lọc tuần tự)
     # Lọc theo danh mục
+    # if category_slug:
+    #     products = products.filter(category__slug__icontains=category_slug, is_active=True)
+    #xx
+    breadcrumb_trail = []
     if category_slug:
-        products = products.filter(category__slug__icontains=category_slug, is_active=True)
+        active_category = Category.objects.filter(slug=category_slug, is_active=True).first()
+        
+        if active_category:
+            # --- [LOGIC 1] TẠO BREADCRUMB (Truy xuất ngược lên tổ tiên) ---
+            current = active_category
+            while current:
+                breadcrumb_trail.insert(0, current) # Chèn vào đầu danh sách
+                current = current.parent
+            # Kết quả breadcrumb_trail sẽ là: [Laptop, Lenovo, Thinkpad]
+            
+            # --- [LOGIC 2] LỌC SẢN PHẨM (Lấy sản phẩm của nó và con cháu nó) ---
+            # Hàm get_descendants() chỉ có nếu dùng thư viện MPTT, 
+            # còn với Django thuần ta dùng logic filter cơ bản:
+            
+            # Lấy tất cả danh mục con cháu (nếu có) để lọc sản phẩm
+            # Lưu ý: Nếu cấu trúc quá sâu (4-5 cấp), nên dùng django-mptt. 
+            # Ở đây ta xử lý 3 cấp thủ công bằng Q objects:
+            
+            products = products.filter(
+                Q(category=active_category) |               # Chính nó (Thinkpad)
+                Q(category__parent=active_category) |       # Con trực tiếp
+                Q(category__parent__parent=active_category) # Cháu (đề phòng có cấp 4)
+            )
+
+            # --- [LOGIC 3] TÌM SUB-CATEGORIES ĐỂ HIỂN THỊ GỢI Ý ---
+            # Luôn hiển thị các con trực tiếp của danh mục đang chọn
+            sub_categories = active_category.children.filter(is_active=True)
+    #xx
+
 
     # Lọc theo từ khóa tìm kiếm (Tìm trong tên hoặc mô tả)
     if search_query:
@@ -344,7 +376,8 @@ def shop(request):
         'min_price': min_price, 
         'max_price': max_price,
         "sub_categories": sub_categories,
-        "selected_category": selected_category
+        "selected_category": selected_category,
+        "breadcrumb_trail": breadcrumb_trail
     }
 
     

@@ -27,7 +27,7 @@
                                 <label class="form-check-label" for="cat_all">Tất cả</label>
                             </div>
                             {% for cat in categories %}
-                                {% if cat.parent == "" %}
+                                {% if cat.parent == None %}
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="category" id="cat_{{ cat.id }}" value="{{ cat.name }}" {% if current_category == cat.slug %}checked{% endif %}>
                                 <label class="form-check-label" for="cat_{{ cat.id }}">{{ cat.name }}</label>
@@ -64,6 +64,9 @@
                 <option value="name-asc">Tên: A-Z</option>
                 <option value="name-desc">Tên: Z-A</option>
             </select>
+
+            {% comment %} {%  %} {% endcomment %}
+
             
             {% if products %}
             <div class="row row-cols-1 row-cols-md-3 g-4">

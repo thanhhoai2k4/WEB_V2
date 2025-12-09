@@ -275,7 +275,22 @@ def shop(request):
     products = Product.objects.filter(is_active=True).annotate(
         current_price=Coalesce('sale_price', 'base_price')
     )
-    categories = Category.objects.all()
+    categories = Category.objects.select_related("parent").all()
+
+    xx = []
+    for item in categories:
+        xx.append(item)
+
+        
+    # mobile_products = Product.objects.select_related('category').filter(
+    #     is_active=True  # Chỉ lấy sản phẩm đang kinh doanh
+    # ).filter(
+    #     Q(name__icontains='mobile') |
+    #     Q(name__icontains='phone') |
+    #     Q(category__slug__icontains='mobile') |
+    #     Q(category__slug__icontains='phone')
+    # ).order_by('-created_at')[:4] # Slicing: Giới hạn 4 sản phẩm
+
 
     # 2. Lấy tham số từ URL (Method GET)
     category_slug = request.GET.get('category',"")  # nếu tồn tại category: trả về value tương úng, còn không trả về chuổi rỗng
@@ -320,6 +335,14 @@ def shop(request):
         'min_price': min_price, 
         'max_price': max_price
     }
+
+
+
+    # thuc hien tim nhung thanh con khi doi tuong select:
+    # product = get_object_or_404(Product, slug=category_slug, is_active=True)
+    # all_children = father_cat.children.all()
+
+
 
     return render(request, 'shop/shop.html', context)
 

@@ -4,15 +4,31 @@ from .models import UserProfile
 from .models import Order
 
 
+class Usergisiger(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    class Meta:
+        model = User
+        fields = ["username", "password"]
+
+        widgets = {
+
+        }
+
+
+
+
 # basic form for user
 class UserUpdateForm(forms.ModelForm):
-    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}))
-    first_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    last_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email']
+
+        widgets = {
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+        }
 
 # Form 2:profile
 class ProfileUpdateForm(forms.ModelForm):
@@ -70,9 +86,10 @@ class FormTest(forms.ModelForm):
     first_name= forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     last_name= forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     email= forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     
     class Meta:
         model = User
-        fields = ['username', 'first_name', "last_name", "email"]
+        fields = ['username', 'first_name', "last_name", "email", "password"]
     def __str__(self):
         return "form test"

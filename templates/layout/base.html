@@ -241,7 +241,7 @@
           </button>
           <div class="offcanvas offcanvas-end" tabindex="-1" id="bdNavbar" aria-labelledby="bdNavbarOffcanvasLabel">
             <div class="offcanvas-header px-4 pb-0">
-              <a class="navbar-brand" href="index.html">
+              <a class="navbar-brand" href="../index.html">
                 <img src="images/main-logo.png" class="logo">
               </a>
               <button type="button" class="btn-close btn-close-black" data-bs-dismiss="offcanvas" aria-label="Close" data-bs-target="#bdNavbar"></button>
@@ -282,7 +282,7 @@
                       <a href="{% url 'blog_list' %}" class="dropdown-item">Blog</a>
                     </li>
                     <li>
-                      <a href="{% url 'shop'%}" class="dropdown-item">Shop</a>
+                      <a href="{% url 'shop' %}" class="dropdown-item">Shop</a>
                     </li>
                     <li>
                       <a href="{% url 'view_cart' %}" class="dropdown-item">Cart</a>
@@ -325,7 +325,7 @@
                               </ul>
                             </div>
                           {% else %}
-                            <a href="{% url 'login' %}">
+                            <a href="{% url 'logincuathay' %}">
                               <svg class="user"><use xlink:href="#user"></use></svg>
                               <span class="ms-1 small">Login / Register</span>
                             </a>

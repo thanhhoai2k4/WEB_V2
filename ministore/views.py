@@ -118,16 +118,16 @@ def register(request):
         # 2. Validate
         if password != re_password:
             messages.error(request, "Mật khẩu không khớp!")
-            return render(request, 'register.html', {'active_tab': 'register'}) # Giữ lại tab đăng ký
+            return render(request, 'login/register.html', {'active_tab': 'register'}) # Giữ lại tab đăng ký
         if User.objects.filter(username=username).exists():
             messages.error(request, "Tên đăng nhập đã tồn tại!")
-            return render(request, 'register.html', {'active_tab': 'register'})
+            return render(request, 'login/register.html', {'active_tab': 'register'})
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email đã được sử dụng!")
-            return render(request, 'register.html', {'active_tab': 'register'})
+            return render(request, 'login/register.html', {'active_tab': 'register'})
         if User.objects.filter(profile__phone_number=phone).exists():
             messages.error(request, "Số điện thoại đã được sử dụng!")
-            return render(request, 'register.html', {'active_tab': 'register'})
+            return render(request, 'login/register.html', {'active_tab': 'register'})
 
         # 3. Tạo User
         try:
@@ -144,10 +144,10 @@ def register(request):
 
         except Exception as e:
             messages.error(request, f"Có lỗi xảy ra: {e}")
-            return render(request, 'register.html', {'active_tab': 'register'})
+            return render(request, 'login/register.html', {'active_tab': 'register'})
 
     # GET request: Hiển thị form và mặc định active tab Register
-    return render(request, 'register.html', {'active_tab': 'register'})
+    return render(request, 'login/register.html', {'active_tab': 'register'})
 
 def login_view(request):
     """
@@ -239,7 +239,7 @@ def login_view(request):
             return render(request, 'register.html', {'active_tab': 'login'})
     
     # {'active_tab': 'login'}: ở bên html hứng nó bằng biến active_tab.
-    return render(request, 'register.html', {'active_tab': 'login'})
+    return render(request, 'login/register.html', {'active_tab': 'login'})
 
 
 def logout_user(request):
@@ -310,7 +310,7 @@ def shop(request):
             pass
 
     # thực hiện phân trang....
-
+    
     context = {
         'products': products,
         'categories': categories,
@@ -321,7 +321,7 @@ def shop(request):
         'max_price': max_price
     }
 
-    return render(request, 'shop.html', context)
+    return render(request, 'shop/shop.html', context)
 
 
 
@@ -849,3 +849,9 @@ def compare_view(request):
         'specs_keys': sorted_keys,
     }
     return render(request, 'compare.html', context)
+
+
+
+def logincuathay(request):
+
+    return render(request, 'login/login.html')

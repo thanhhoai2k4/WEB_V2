@@ -6,6 +6,9 @@ urlpatterns = [
     path("", views.home, name="home"),
 
 
+    # login cua thay
+    path("logincuathay", views.logincuathay, name="logincuathay"),
+
     # register
     path('auth/', views.auth_view, name='auth'),
     path("Register/", views.register, name="register"),

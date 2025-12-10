@@ -8,18 +8,15 @@ from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist
 
 
-
-from mptt.models import MPTTModel, TreeForeignKey
-
-class Category(MPTTModel):
+class Category(models.Model):
     name = models.CharField(max_length=200, unique=True, verbose_name="Tên danh mục")
     slug = models.SlugField(max_length=200, unique=True, blank=True, help_text="URL thân thiện cho SEO")
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
-    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     is_active = models.BooleanField(default=True, help_text="Tắt danh mục này thay vì xóa nó")
 
-    class MPTTMeta:
-        order_insertion_by = ['name']
+    class Meta:
+        verbose_name_plural = "Categories"
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -29,7 +26,7 @@ class Category(MPTTModel):
     def __str__(self):
         """
         Docstring for __str__
-        
+
         :param self: Description
         """
         full_path = [self.name]
@@ -37,13 +34,13 @@ class Category(MPTTModel):
         while k is not None:
             full_path.append(k.name)
             k = k.parent
-        
+
         sorted(full_path)
-        # return ' -> '.join(full_path[::-1])
-        return self.name
+        return ' -> '.join(full_path[::-1])
+
 
 class Product(models.Model):
-    category = TreeForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=255, verbose_name="Tên sản phẩm")
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     description = models.TextField(verbose_name="Mô tả chi tiết", blank=True)

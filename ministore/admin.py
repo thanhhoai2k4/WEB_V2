@@ -4,6 +4,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from .models import UserProfile, Product, Category, Order  # Import các model của bạn
 
+
 # 1. Định nghĩa form nhập liệu Profile nằm ngay trong trang User
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
@@ -75,7 +76,6 @@ admin.site.register(Product, ProductAdmin)
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(Category)
-# admin.site.register(Product)
 admin.site.register(ProductImage)
 admin.site.register(Order)
 admin.site.register(OrderItem)
@@ -86,3 +86,5 @@ admin.site.register(CartItem)
 admin.site.register(Coupon)
 admin.site.register(Transaction)
 admin.site.register(StockLog)
+admin.site.register(Category_TEST)
+admin.site.register(Product_TEST)

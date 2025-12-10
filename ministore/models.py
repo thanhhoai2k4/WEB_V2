@@ -6,38 +6,48 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+from mptt.models import MPTTModel, TreeForeignKey
 
+# class Category(models.Model):
+#     name = models.CharField(max_length=200, unique=True, verbose_name="Tên danh mục")
+#     slug = models.SlugField(max_length=200, unique=True, blank=True, help_text="URL thân thiện cho SEO")
+#     image = models.ImageField(upload_to='categories/', blank=True, null=True)
+#     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+#     is_active = models.BooleanField(default=True, help_text="Tắt danh mục này thay vì xóa nó")
+#
+#     class Meta:
+#         verbose_name_plural = "Categories"
+#
+#     def save(self, *args, **kwargs):
+#         if not self.slug:
+#             self.slug = slugify(self.name)
+#         super().save(*args, **kwargs)
+#
+#     def __str__(self):
+#         """
+#         Docstring for __str__
+#
+#         :param self: Description
+#         """
+#         full_path = [self.name]
+#         k = self.parent
+#         while k is not None:
+#             full_path.append(k.name)
+#             k = k.parent
+#
+#         sorted(full_path)
+#         return ' -> '.join(full_path[::-1])
 
-class Category(models.Model):
+class Category(MPTTModel):
     name = models.CharField(max_length=200, unique=True, verbose_name="Tên danh mục")
     slug = models.SlugField(max_length=200, unique=True, blank=True, help_text="URL thân thiện cho SEO")
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     is_active = models.BooleanField(default=True, help_text="Tắt danh mục này thay vì xóa nó")
 
-    class Meta:
-        verbose_name_plural = "Categories"
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        """
-        Docstring for __str__
-
-        :param self: Description
-        """
-        full_path = [self.name]
-        k = self.parent
-        while k is not None:
-            full_path.append(k.name)
-            k = k.parent
-
-        sorted(full_path)
-        return ' -> '.join(full_path[::-1])
-
+    class MPTTMeta:
+        order_insertion_by = ['name']
 
 class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
@@ -73,6 +83,9 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+
 
 
 class ProductImage(models.Model):

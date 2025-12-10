@@ -32,7 +32,7 @@ admin.site.register(StockLog)
 
 
 
-
+#test
 from django.contrib import admin
 from mptt.admin import DraggableMPTTAdmin
 from .models import Category, Product

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.utils.html import format_html
 from mptt.admin import DraggableMPTTAdmin
 # Import tất cả models của bạn
@@ -10,14 +10,34 @@ from .models import (
     Coupon, Transaction, StockLog, Post
 )
 
+# test
+from django.contrib.admin.sites import NotRegistered
+from unfold.admin import ModelAdmin
+from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
+# test
+
+try:
+    admin.site.unregister(User)
+except NotRegistered:
+    pass
+
+try:
+    admin.site.unregister(Group)
+except NotRegistered:
+    pass
+
 # --- 1. SETUP USER PROFILE (Mở rộng User) ---
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
     verbose_name_plural = 'Thông tin mở rộng (Profile)'
 
-class UserAdmin(BaseUserAdmin):
+@admin.register(User)
+class UserAdmin(BaseUserAdmin, ModelAdmin):
     inlines = (UserProfileInline,)
+    form = UserChangeForm
+    add_form = UserCreationForm
+    change_password_form = AdminPasswordChangeForm
 
 # --- 2. SETUP PRODUCT (Sản phẩm & Ảnh) ---
 class ProductImageInline(admin.TabularInline):
@@ -33,7 +53,7 @@ class ProductImageInline(admin.TabularInline):
     
     image_preview.short_description = "Xem trước"
 
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(ModelAdmin):
     # A. Danh sách hiển thị
     list_display = ('name', 'show_price', 'stock', 'category', 'is_active', 'created_at')
     list_filter = ('category', 'is_active', 'created_at')
@@ -62,6 +82,7 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = ('views_count', 'created_at', 'updated_at')
     inlines = [ProductImageInline] # Nhúng form ảnh phụ
 
+
     def show_price(self, obj):
         return f"{obj.price:,.0f} đ"
     show_price.short_description = "Giá bán"
@@ -79,9 +100,9 @@ class CategoryAdmin(DraggableMPTTAdmin):
 
 # --- 4. ĐĂNG KÝ (REGISTER) ---
 
-# Xử lý User cũ -> mới
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+# # Xử lý User cũ -> mới
+# admin.site.unregister(User)
+# admin.site.register(User, UserAdmin)
 
 # Các model chính
 admin.site.register(Category, CategoryAdmin)

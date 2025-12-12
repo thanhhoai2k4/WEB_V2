@@ -12,6 +12,29 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
+
+#adding a dropdown navigation menu in the sidebar
+UNFOLD = {
+    "SITE_DROPDOWN": [
+        {
+            "icon": "home",
+            "title": _("home page"),
+            "link": reverse_lazy("home"),
+            "attrs": {
+                "target": "_blank",
+            },
+        },
+        {
+            "icon": "tab",
+            "title": _("home admin"),
+            "link": reverse_lazy("admin:index"),
+        },
+    ]
+}
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,12 +53,25 @@ ALLOWED_HOSTS = ['mystore.com', 'www.mystore.com', '123.45.67.89', 'localhost', 
 
 # Application definition
 INSTALLED_APPS = [
-    "unfold",  # <-- Đặt lên đầu
-    "unfold.contrib.filters",  # Tùy chọn: bộ lọc đẹp hơn
-    "unfold.contrib.forms",    # Tùy chọn: form đẹp hơn
-    "unfold.contrib.import_export",
-    # 'jazzmin', # <-- Đặt trước admin
-    "django.contrib.admin",
+    # "unfold",  # <-- Đặt lên đầu
+    # "unfold.contrib.filters",  # Tùy chọn: bộ lọc đẹp hơn
+    # "unfold.contrib.forms",    # Tùy chọn: form đẹp hơn
+    # "unfold.contrib.import_export",
+
+    # test
+    "unfold",  # before django.contrib.admin
+    "unfold.contrib.filters",  # optional, if special filters are needed
+    "unfold.contrib.forms",  # optional, if special form elements are needed
+    "unfold.contrib.inlines",  # optional, if special inlines are needed
+    "unfold.contrib.import_export",  # optional, if django-import-export package is used
+    "unfold.contrib.guardian",  # optional, if django-guardian package is used
+    "unfold.contrib.simple_history",  # optional, if django-simple-history package is used
+    "unfold.contrib.location_field",  # optional, if django-location-field package is used
+    "unfold.contrib.constance",  # optional, if django-constance package is used
+    "django.contrib.admin",  # required
+    #test
+
+
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -51,6 +87,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     "mptt",
+    "import_export"
 ]
 
 MIDDLEWARE = [

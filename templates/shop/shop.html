@@ -100,7 +100,7 @@
             {% endif %}
         </ol>
     </nav>
-    {% if sub_categories %}
+    {% comment %} {% if sub_categories %}
         <div class="mb-4 border-bottom pb-3">
             <span class="text-muted small me-2">Dòng sản phẩm thuộc {{ active_category.name }}:</span>
             <div class="d-flex flex-wrap gap-2 mt-1">
@@ -111,7 +111,7 @@
                 {% endfor %}
             </div>
         </div>
-    {% endif %}
+    {% endif %} {% endcomment %}
             {% if selected_category and sub_categories %}
                 <div class="mb-4 border-bottom pb-3">
                     <p class="text-muted mb-2">Dang xem: <strong>{{ selected_category.name }}</strong></p>

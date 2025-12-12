@@ -2,19 +2,18 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User, Group
 from django.utils.html import format_html
+
 from mptt.admin import DraggableMPTTAdmin
 # Import tất cả models của bạn
+# test
+from django.contrib.admin.sites import NotRegistered
+from unfold.admin import ModelAdmin
+from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 from .models import (
     UserProfile, Product, Category, Order, OrderItem,
     ProductImage, Review, Address, Cart, CartItem,
     Coupon, Transaction, StockLog, Post
 )
-
-# test
-from django.contrib.admin.sites import NotRegistered
-from unfold.admin import ModelAdmin
-from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
-# test
 
 try:
     admin.site.unregister(User)
@@ -26,18 +25,25 @@ try:
 except NotRegistered:
     pass
 
-# --- 1. SETUP USER PROFILE (Mở rộng User) ---
+
+# user profile
+# -----------
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
     verbose_name_plural = 'Thông tin mở rộng (Profile)'
-
 @admin.register(User)
 class UserAdmin(BaseUserAdmin, ModelAdmin):
     inlines = (UserProfileInline,)
     form = UserChangeForm
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
+# --------------------------
+
+@admin.register(Group)
+class GroupAdmin(ModelAdmin):
+    search_fields = ['name']
+    list_display = ['name']
 
 # --- 2. SETUP PRODUCT (Sản phẩm & Ảnh) ---
 class ProductImageInline(admin.TabularInline):
@@ -53,6 +59,8 @@ class ProductImageInline(admin.TabularInline):
     
     image_preview.short_description = "Xem trước"
 
+
+@admin.register(Product)
 class ProductAdmin(ModelAdmin):
     # A. Danh sách hiển thị
     list_display = ('name', 'show_price', 'stock', 'category', 'is_active', 'created_at')
@@ -87,15 +95,34 @@ class ProductAdmin(ModelAdmin):
         return f"{obj.price:,.0f} đ"
     show_price.short_description = "Giá bán"
 
-# --- 3. SETUP CATEGORY (Danh mục kéo thả) ---
-class CategoryAdmin(DraggableMPTTAdmin):
-    mptt_indent_field = "name"
-    list_display = ('tree_actions', 'indented_title', 'is_active', 'id')
-    list_display_links = ('indented_title',)
+
+@admin.register(Category)
+class CategoryAdmin(ModelAdmin):
+    search_fields = ['name']
+    list_display = ('indented_title', 'slug', 'is_active', 'id')
+    list_filter = ['is_active', 'level']
     prepopulated_fields = {'slug': ('name',)}
-    
-    # Thêm cái này để tìm kiếm danh mục dễ hơn nếu cây quá dài
-    search_fields = ['name'] 
+
+    # Hiển thị cây phân cấp bằng text (thay thế cho kéo thả của MPTT)
+    def indented_title(self, obj):
+        return format_html(
+            '<span style="padding-left: {}px">{} {}</span>',
+            obj.level * 20,
+            "├─" if obj.level > 0 else "<b>•</b>",
+            obj.name
+        )
+
+    indented_title.short_description = "Danh mục"
+# @admin.register(Category)
+# class CategoryAdmin(DraggableMPTTAdmin):
+#     mptt_indent_field = "name"
+#     list_display = ('tree_actions', 'indented_title', 'is_active', 'id')
+#     list_display_links = ('indented_title',)
+#     prepopulated_fields = {'slug': ('name',)}
+#
+#     # Thêm cái này để tìm kiếm danh mục dễ hơn nếu cây quá dài
+#     search_fields = ['name']
+
 
 
 # --- 4. ĐĂNG KÝ (REGISTER) ---
@@ -105,8 +132,8 @@ class CategoryAdmin(DraggableMPTTAdmin):
 # admin.site.register(User, UserAdmin)
 
 # Các model chính
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Product, ProductAdmin)
+# admin.site.register(Category, CategoryAdmin)
+# admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductImage)
 admin.site.register(Order)
 admin.site.register(OrderItem)

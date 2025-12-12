@@ -256,7 +256,7 @@ def logout_user(request):
     # khi chưa đăng nhập thì trả về trang login.
     else:
         messages.success(request, "Bạn chưa đăng nhập")
-
+        return redirect('home')
     # khi bấm đăng xuất luôn luôn trả về trang login để thực hiện đăng nhập.
     return redirect("login")
 

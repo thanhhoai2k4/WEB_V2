@@ -28,80 +28,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['mystore.com', 'www.mystore.com', '123.45.67.89', 'localhost', '127.0.0.1']
 
-
-JAZZMIN_SETTINGS = {
-    # 1. TIÊU ĐỀ & LOGO
-    "site_title": "Quản trị MiniStore",
-    "site_header": "MiniStore Admin",
-    "site_brand": "MiniStore",
-    # Dùng logo bạn đã upload
-    "site_logo": "images/main-logo.png", 
-    "login_logo": "images/main-logo.png",
-    "welcome_sign": "Chào mừng trở lại MiniStore!",
-    "copyright": "Thanh Hoai MiniStore Ltd",
-
-    # 2. MENU & ICON (Làm cho dễ dùng)
-    # Tìm icon tại: https://fontawesome.com/v5/search?m=free
-    "icons": {
-        "auth": "fas fa-users-cog",
-        "auth.user": "fas fa-user",
-        "auth.Group": "fas fa-users",
-        
-        # Icon cho các Model của bạn (Làm đẹp ở đây)
-        "ministore.Product": "fas fa-box-open",     # Hộp hàng
-        "ministore.Category": "fas fa-sitemap",     # Sơ đồ cây
-        "ministore.Order": "fas fa-shopping-cart",  # Giỏ hàng (Quan trọng)
-        "ministore.OrderItem": "fas fa-list-ol",
-        "ministore.Customer": "fas fa-user-tag",
-        "ministore.Review": "fas fa-star",
-        "ministore.Coupon": "fas fa-ticket-alt",    # Vé giảm giá
-        "ministore.Transaction": "fas fa-money-bill-wave", # Tiền
-        "ministore.StockLog": "fas fa-warehouse",   # Nhà kho
-    },
-
-    # 3. SẮP XẾP MENU (Cái gì quan trọng đưa lên đầu)
-    "order_with_respect_to": [
-        "ministore.Order",      # Đơn hàng quan trọng nhất
-        "ministore.Product",
-        "ministore.Category",
-        "ministore.Coupon",
-        "auth",                 # Quản lý user để xuống dưới
-    ],
-
-    # 4. TRẢI NGHIỆM NGƯỜI DÙNG (UX)
-    "show_sidebar": True,       # Hiện thanh menu trái
-    "navigation_expanded": True,# Mặc định mở rộng menu
-    "search_model": ["ministore.Product", "ministore.Order"], # Ô tìm kiếm trên cùng sẽ tìm trong 2 bảng này
-    "user_avatar": "profile.avatar", # Nếu UserProfile có field avatar
-}
-
-# 5. GIAO DIỆN MÀU SẮC (THEME)
-JAZZMIN_UI_TWEAKS = {
-    "theme": "flatly",        # Chọn theme: 'flatly' (Trắng xanh hiện đại), 'darkly' (Màu tối), 'slate', 'yeti'...
-    #"dark_mode_theme": "darkly", # Tự động chuyển dark mode (tùy chỉnh)
-    "navbar": "navbar-dark",  
-    "sidebar": "sidebar-dark-primary", # Menu trái màu tối cho chuyên nghiệp
-    "button_classes": {
-        "primary": "btn-primary",
-        "secondary": "btn-secondary",
-        "info": "btn-info",
-        "warning": "btn-warning",
-        "danger": "btn-danger",
-        "success": "btn-success"
-    }
-}
-
-
-
-
 # Application definition
 INSTALLED_APPS = [
-    
     "unfold",  # <-- Đặt lên đầu
     "unfold.contrib.filters",  # Tùy chọn: bộ lọc đẹp hơn
     "unfold.contrib.forms",    # Tùy chọn: form đẹp hơn
-
-    'jazzmin', # <-- Đặt trước admin
+    "unfold.contrib.import_export",
+    # 'jazzmin', # <-- Đặt trước admin
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

@@ -6,6 +6,7 @@ from django.utils.html import format_html
 from mptt.admin import DraggableMPTTAdmin
 # Import tất cả models của bạn
 # test
+from unfold.decorators import display
 from django.contrib.admin.sites import NotRegistered
 from unfold.admin import ModelAdmin
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
@@ -96,44 +97,99 @@ class ProductAdmin(ModelAdmin):
     show_price.short_description = "Giá bán"
 
 
+
 @admin.register(Category)
 class CategoryAdmin(ModelAdmin):
-    search_fields = ['name']
-    list_display = ('indented_title', 'slug', 'is_active', 'id')
+    # 1. Tìm kiếm & Lọc
+    search_fields = ['name', 'slug']
     list_filter = ['is_active', 'level']
+    list_filter_submit = True  # Nút lọc của Unfold
+
+    # 2. Hiển thị danh sách
+    # 'indented_title' để hiện cây thư mục, 'parent' để biết cha là ai
+    list_display = ('indented_title', 'slug', 'is_active', 'product_count_display')
+
+    # 3. Sắp xếp QUAN TRỌNG cho MPTT
+    # Nếu không có dòng này, cây thư mục sẽ bị lộn xộn
+    ordering = ('tree_id', 'lft')
+
     prepopulated_fields = {'slug': ('name',)}
 
-    # Hiển thị cây phân cấp bằng text (thay thế cho kéo thả của MPTT)
+    # 4. Form nhập liệu chi tiết
+    fieldsets = (
+        ('Thông tin chung', {
+            'fields': (('name', 'slug'), 'parent', 'is_active'),
+        }),
+        ('Hình ảnh', {
+            'fields': ('image',),
+        }),
+    )
+
+    # --- CÁC HÀM TÙY BIẾN GIAO DIỆN ---
+
+    @display(description="Danh mục (Cây phân cấp)", ordering="name")
     def indented_title(self, obj):
+        """
+        Tạo hiển thị thụt đầu dòng dựa trên level của category
+        """
+        level = getattr(obj, 'level', 0)
+        indent_pixels = level * 24  # Thụt vào 24px mỗi cấp
+
+        # Icon hiển thị: Folder mở cho cha, dấu chấm cho con
+        icon = '📂' if not obj.is_leaf_node() else '📄'
+
+        # Màu sắc đường kẻ
+        line_style = f"margin-left: {indent_pixels}px; color: #9ca3af; font-family: monospace; font-size: 1.2em;"
+
+        if level > 0:
+            prefix = f'<span style="{line_style}">├─ </span>'
+        else:
+            prefix = ""
+
+        # Kết hợp icon và tên, bôi đậm nếu là cấp cha (level 0)
+        name_html = f"<b>{obj.name}</b>" if level == 0 else obj.name
+
         return format_html(
-            '<span style="padding-left: {}px">{} {}</span>',
-            obj.level * 20,
-            "├─" if obj.level > 0 else "<b>•</b>",
-            obj.name
+            '<div style="display: flex; align-items: center;">'
+            '{}{}<span style="margin-left: 8px;">{}</span>'
+            '</div>',
+            format_html(prefix),  # Prefix an toàn
+            icon,
+            format_html(name_html)  # Tên an toàn
         )
 
-    indented_title.short_description = "Danh mục"
+    @display(description="Số SP")
+    def product_count_display(self, obj):
+        """
+        Hiển thị số lượng sản phẩm trong danh mục này
+        """
+        count = obj.products.count()  # Giả sử related_name trong Product là 'products'
+        if count > 0:
+            return format_html(
+                '<span style="background-color: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">{}</span>',
+                count
+            )
+        return "-"
 # @admin.register(Category)
-# class CategoryAdmin(DraggableMPTTAdmin):
-#     mptt_indent_field = "name"
-#     list_display = ('tree_actions', 'indented_title', 'is_active', 'id')
-#     list_display_links = ('indented_title',)
+# class CategoryAdmin(ModelAdmin):
+#     search_fields = ['name']
+#     list_display = ('indented_title', 'slug', 'is_active', 'id')
+#     list_filter = ['is_active', 'level']
 #     prepopulated_fields = {'slug': ('name',)}
 #
-#     # Thêm cái này để tìm kiếm danh mục dễ hơn nếu cây quá dài
-#     search_fields = ['name']
+#     # Hiển thị cây phân cấp bằng text (thay thế cho kéo thả của MPTT)
+#     def indented_title(self, obj):
+#         return format_html(
+#             '<span style="padding-left: {}px">{} {}</span>',
+#             obj.level * 20,
+#             "├─" if obj.level > 0 else "<b>•</b>",
+#             obj.name
+#         )
+#
+#     indented_title.short_description = "Danh mục"
 
 
 
-# --- 4. ĐĂNG KÝ (REGISTER) ---
-
-# # Xử lý User cũ -> mới
-# admin.site.unregister(User)
-# admin.site.register(User, UserAdmin)
-
-# Các model chính
-# admin.site.register(Category, CategoryAdmin)
-# admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductImage)
 admin.site.register(Order)
 admin.site.register(OrderItem)

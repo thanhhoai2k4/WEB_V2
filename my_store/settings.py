@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     "mptt",
+    "treewidget",
     "import_export"
 ]
 

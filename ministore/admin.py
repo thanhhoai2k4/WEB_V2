@@ -3,9 +3,6 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User, Group
 from django.utils.html import format_html
 
-from mptt.admin import DraggableMPTTAdmin
-# Import tất cả models của bạn
-# test
 from unfold.decorators import display
 from django.contrib.admin.sites import NotRegistered
 from unfold.admin import ModelAdmin
@@ -15,6 +12,11 @@ from .models import (
     ProductImage, Review, Address, Cart, CartItem,
     Coupon, Transaction, StockLog, Post
 )
+
+from django.utils.safestring import mark_safe # <--- Quan trọng
+from django.utils.html import escape # Để bảo mật tên danh mục
+from treewidget.widgets import TreeWidget
+from mptt.models import TreeForeignKey
 
 try:
     admin.site.unregister(User)
@@ -64,7 +66,7 @@ class ProductImageInline(admin.TabularInline):
 @admin.register(Product)
 class ProductAdmin(ModelAdmin):
     # A. Danh sách hiển thị
-    list_display = ('name', 'show_price', 'stock', 'category', 'is_active', 'created_at')
+    list_display = ('name', 'show_price', 'stock', 'category_badge', 'is_active', 'created_at')
     list_filter = ('category', 'is_active', 'created_at')
     search_fields = ('name', 'description')
     list_editable = ('stock', 'is_active')  # Sửa nhanh trên danh sách
@@ -91,6 +93,23 @@ class ProductAdmin(ModelAdmin):
     readonly_fields = ('views_count', 'created_at', 'updated_at')
     inlines = [ProductImageInline] # Nhúng form ảnh phụ
 
+    formfield_overrides = {
+        TreeForeignKey: {'widget': TreeWidget(options={
+            'expand_selected_ancestors': True,  # Tự động mở nhánh cha của mục đang chọn
+            'open_links_in_new_window': True
+        })},
+    }
+
+    # Hiển thị Category đẹp hơn trong danh sách sản phẩm (Option thêm)
+    @display(description="Danh mục")
+    def category_badge(self, obj):
+        if obj.category:
+            # Hiển thị tên danh mục với màu sắc nổi bật
+            return format_html(
+                '<span style="background-color: #f3f4f6; color: #374151; padding: 4px 8px; border-radius: 6px; font-weight: 500; border: 1px solid #e5e7eb;">📂 {}</span>',
+                obj.category.name
+            )
+        return "-"
 
     def show_price(self, obj):
         return f"{obj.price:,.0f} đ"
@@ -115,6 +134,7 @@ class CategoryAdmin(ModelAdmin):
 
     prepopulated_fields = {'slug': ('name',)}
 
+
     # 4. Form nhập liệu chi tiết
     fieldsets = (
         ('Thông tin chung', {
@@ -127,66 +147,52 @@ class CategoryAdmin(ModelAdmin):
 
     # --- CÁC HÀM TÙY BIẾN GIAO DIỆN ---
 
-    @display(description="Danh mục (Cây phân cấp)", ordering="name")
+    @display(description="Danh mục (Cây phân cấp)")
     def indented_title(self, obj):
-        """
-        Tạo hiển thị thụt đầu dòng dựa trên level của category
-        """
         level = getattr(obj, 'level', 0)
-        indent_pixels = level * 24  # Thụt vào 24px mỗi cấp
+        indent_pixels = level * 24
 
-        # Icon hiển thị: Folder mở cho cha, dấu chấm cho con
+        # 1. Tạo Prefix (Dùng f-string bình thường, không cần format_html ở đây)
+        prefix = ""
+        if level > 0:
+            prefix = f'<span style="margin-left: {indent_pixels}px; color: #9ca3af; font-family: monospace; font-size: 1.2em;">├─ </span>'
+
+        # 2. Icon hiển thị
         icon = '📂' if not obj.is_leaf_node() else '📄'
 
-        # Màu sắc đường kẻ
-        line_style = f"margin-left: {indent_pixels}px; color: #9ca3af; font-family: monospace; font-size: 1.2em;"
+        # 3. Tên danh mục
+        # QUAN TRỌNG: Dùng escape() để mã hóa tên danh mục, tránh lỗi nếu tên có ký tự đặc biệt
+        safe_name = escape(obj.name)
 
-        if level > 0:
-            prefix = f'<span style="{line_style}">├─ </span>'
+        if level == 0:
+            name_display = f"<b>{safe_name}</b>"
         else:
-            prefix = ""
+            name_display = safe_name
 
-        # Kết hợp icon và tên, bôi đậm nếu là cấp cha (level 0)
-        name_html = f"<b>{obj.name}</b>" if level == 0 else obj.name
+        # 4. Kết hợp tất cả lại thành một chuỗi HTML lớn
+        full_html = f'''
+                <div style="display: flex; align-items: center;">
+                    {prefix}
+                    {icon}
+                    <span style="margin-left: 8px;">{name_display}</span>
+                </div>
+            '''
 
-        return format_html(
-            '<div style="display: flex; align-items: center;">'
-            '{}{}<span style="margin-left: 8px;">{}</span>'
-            '</div>',
-            format_html(prefix),  # Prefix an toàn
-            icon,
-            format_html(name_html)  # Tên an toàn
-        )
+        # 5. Trả về với mark_safe (Đây là "chìa khóa" để render HTML)
+        return mark_safe(full_html)
 
     @display(description="Số SP")
     def product_count_display(self, obj):
-        """
-        Hiển thị số lượng sản phẩm trong danh mục này
-        """
-        count = obj.products.count()  # Giả sử related_name trong Product là 'products'
+        count = obj.products.count()
         if count > 0:
             return format_html(
                 '<span style="background-color: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">{}</span>',
                 count
             )
         return "-"
-# @admin.register(Category)
-# class CategoryAdmin(ModelAdmin):
-#     search_fields = ['name']
-#     list_display = ('indented_title', 'slug', 'is_active', 'id')
-#     list_filter = ['is_active', 'level']
-#     prepopulated_fields = {'slug': ('name',)}
-#
-#     # Hiển thị cây phân cấp bằng text (thay thế cho kéo thả của MPTT)
-#     def indented_title(self, obj):
-#         return format_html(
-#             '<span style="padding-left: {}px">{} {}</span>',
-#             obj.level * 20,
-#             "├─" if obj.level > 0 else "<b>•</b>",
-#             obj.name
-#         )
-#
-#     indented_title.short_description = "Danh mục"
+
+
+
 
 
 
@@ -201,3 +207,7 @@ admin.site.register(Coupon)
 admin.site.register(Transaction)
 admin.site.register(StockLog)
 admin.site.register(Post)
+
+
+
+

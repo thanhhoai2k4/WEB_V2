@@ -15,8 +15,7 @@ from .models import (
 
 from django.utils.safestring import mark_safe # <--- Quan trọng
 from django.utils.html import escape # Để bảo mật tên danh mục
-from treewidget.widgets import TreeWidget
-from mptt.models import TreeForeignKey
+
 
 try:
     admin.site.unregister(User)
@@ -93,12 +92,8 @@ class ProductAdmin(ModelAdmin):
     readonly_fields = ('views_count', 'created_at', 'updated_at')
     inlines = [ProductImageInline] # Nhúng form ảnh phụ
 
-    formfield_overrides = {
-        TreeForeignKey: {'widget': TreeWidget(options={
-            'expand_selected_ancestors': True,  # Tự động mở nhánh cha của mục đang chọn
-            'open_links_in_new_window': True
-        })},
-    }
+
+
 
     # Hiển thị Category đẹp hơn trong danh sách sản phẩm (Option thêm)
     @display(description="Danh mục")

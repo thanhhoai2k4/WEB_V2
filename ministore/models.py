@@ -7,8 +7,11 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from mptt.models import MPTTModel, TreeForeignKey
+# from mptt.models import MPTTModel, TreeForeignKey
 
+
+from mptt.models import MPTTModel
+from treewidget.fields import TreeForeignKey
 
 # class Category_TEST(MPTTModel):
 #     name = models.CharField(max_length=50)

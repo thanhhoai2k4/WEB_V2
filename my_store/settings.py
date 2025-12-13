@@ -270,7 +270,10 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Ho_Chi_Minh'
 
-
+TREEWIDGET_TREEOPTIONS = {
+    'expand_selected_ancestors': True,
+    'open_links_in_new_window': True
+}
 
 
 # SECURE_SSL_REDIRECT = False

@@ -48,14 +48,21 @@ class Category(MPTTModel):
 
         :param self: Description
         """
-        full_path = [self.name]
+        # Return only this category's name by default so tree UIs don't repeat
+        # ancestor names on each child line (the tree already shows ancestry).
+        return self.name
+
+    def get_full_path(self):
+        """Return the full path from root to this node as a string.
+
+        Use this when you explicitly need the combined path representation.
+        """
+        parts = [self.name]
         k = self.parent
         while k is not None:
-            full_path.append(k.name)
+            parts.append(k.name)
             k = k.parent
-
-        sorted(full_path)
-        return ' -> '.join(full_path[::-1])
+        return ' / '.join(parts[::-1])
 
 
 class Product(models.Model):

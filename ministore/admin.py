@@ -17,6 +17,10 @@ from django.utils.safestring import mark_safe # <--- Quan trọng
 from django.utils.html import escape # Để bảo mật tên danh mục
 
 
+from treewidget.fields import TreeSelect, TreeForeignKey, TreeModelChoiceField
+from django import forms
+
+
 try:
     admin.site.unregister(User)
 except NotRegistered:
@@ -92,9 +96,6 @@ class ProductAdmin(ModelAdmin):
     readonly_fields = ('views_count', 'created_at', 'updated_at')
     inlines = [ProductImageInline] # Nhúng form ảnh phụ
 
-
-
-
     # Hiển thị Category đẹp hơn trong danh sách sản phẩm (Option thêm)
     @display(description="Danh mục")
     def category_badge(self, obj):
@@ -109,6 +110,31 @@ class ProductAdmin(ModelAdmin):
     def show_price(self, obj):
         return f"{obj.price:,.0f} đ"
     show_price.short_description = "Giá bán"
+
+
+class ProductAdminForm(forms.ModelForm):
+    # Explicitly use the TreeModelChoiceField with TreeSelect widget
+    category = TreeModelChoiceField(
+        queryset=Category.objects.all(),
+        widget=TreeSelect(),
+        settings={'search': True},
+    )
+
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+    # Optional: you can adjust clean/validation here if needed
+
+    # Tell admin to use our custom form so the category field renders as a tree
+
+# Bind the custom form to the ProductAdmin (must be after the form class is defined)
+ProductAdmin.form = ProductAdminForm
+
+
+
+
+    
 
 
 

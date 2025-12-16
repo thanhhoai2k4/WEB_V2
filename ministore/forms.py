@@ -72,13 +72,6 @@ class OrderForm(forms.ModelForm):
             'note': 'Ghi chú đơn hàng',
         }
 
-
-
-
-
-
-
-
 class FormTest(forms.ModelForm):
     # user_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     # address =  forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
@@ -93,3 +86,4 @@ class FormTest(forms.ModelForm):
         fields = ['username', 'first_name', "last_name", "email", "password"]
     def __str__(self):
         return "form test"
+

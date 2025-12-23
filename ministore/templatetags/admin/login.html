@@ -1,0 +1,14 @@
+{% extends "admin/login.html" %}
+
+{% block  %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="/static/img/my-logo.png" alt="Logo Công ty" height="50">
+        Đăng nhập Hệ thống
+    </a>
+</h1>
+{% endblock %}
+
+{% block content_title %}
+    <h2>Xin chào, vui lòng nhập thông tin</h2>
+{% endblock %}

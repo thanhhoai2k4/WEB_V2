@@ -88,7 +88,10 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     "mptt",
     "treewidget",
-    "import_export"
+    "import_export",
+
+
+    "django_extensions", # for generating model visualisations
 ]
 
 MIDDLEWARE = [

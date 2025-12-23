@@ -7,6 +7,7 @@ from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import EmptyPage, Paginator
 from django.db.models import Q  # doc sach UIT de hieu ve Q
+from django.db.models.fields import return_None
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -100,6 +101,7 @@ def register(request):
     """
         Xử lý đăng ký tài khoản mới.
     """
+    previous_url = request.META.get('HTTP_REFERER')
     # request.user.is_authenticated:
     # =>true: đã đăng nhập.
     # =>false: chưa đăng nhập.
@@ -110,10 +112,10 @@ def register(request):
 
         # 1. Lấy dữ liệu
         username = request.POST.get('username')
-        email = request.POST.get('email')
+        email = request.POST.get('email') if request.POST.get('email') != None else ""
         password = request.POST.get('password')
         re_password = request.POST.get('re_password')
-        phone = request.POST.get('phone')
+        phone = request.POST.get('phone') if request.POST.get('phone') != None else ""
 
         # 2. Validate
         if password != re_password:
@@ -122,16 +124,20 @@ def register(request):
         if User.objects.filter(username=username).exists():
             messages.error(request, "Tên đăng nhập đã tồn tại!")
             return render(request, 'login/register.html', {'active_tab': 'register'})
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email=email).exists() and email != "":
             messages.error(request, "Email đã được sử dụng!")
             return render(request, 'login/register.html', {'active_tab': 'register'})
-        if User.objects.filter(profile__phone_number=phone).exists():
+        if User.objects.filter(profile__phone_number=phone).exists() and phone != "":
             messages.error(request, "Số điện thoại đã được sử dụng!")
             return render(request, 'login/register.html', {'active_tab': 'register'})
 
         # 3. Tạo User
         try:
-            new_user = User.objects.create_user(username=username, email=email, password=password)
+            if "admin" not in previous_url:
+                new_user = User.objects.create_user(username=username, email=email, password=password)
+            else:
+                new_user = User.objects.create_superuser(username=username, email=email, password=password)
+                new_user.is_superuser = False
             # auto tạo profile rỗng khi người dùng tạo 1 tài khoảng mới.
             # sau đó vào bổ xung thông tin sau.
             # Cập nhật Profile (Signal đã tạo profile, giờ ta update)
@@ -140,11 +146,15 @@ def register(request):
                 new_user.profile.save() # save
             messages.success(request, "Đăng ký thành công! Vui lòng đăng nhập.")
             # Chuyển sang tab login để người dùng nhập lại
-            return redirect('login') 
+            breakpoint()
+            if "admin" in previous_url:
+                return redirect('admin:index')
+            else:
+                return redirect('login')
 
         except Exception as e:
             messages.error(request, f"Có lỗi xảy ra: {e}")
-            return render(request, 'login/register.html', {'active_tab': 'register'})
+            return render(request, 'login/register.html', {'active_tab': 'register',"true":truee})
 
     # GET request: Hiển thị form và mặc định active tab Register
     return render(request, 'login/register.html', {'active_tab': 'register'})
@@ -923,3 +933,12 @@ def compare_view(request):
 def logincuathay(request):
 
     return render(request, 'login/login.html')
+
+
+
+
+# def register(request):
+#
+#
+#
+#     pass

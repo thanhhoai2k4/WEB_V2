@@ -1,8 +1,9 @@
 Khi thực hiện debug để xem thông tin của các object: 
 - prodcuts[0].__dict__ 
 
-Nên viết 1 hàm để xuất các các tài sản của object.
 
+co nhieu cach debug:
+    - chen code: breakpoint() vao cho python can debug.
 
 
 6/12/2025:

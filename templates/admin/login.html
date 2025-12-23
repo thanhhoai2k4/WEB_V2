@@ -1,0 +1,119 @@
+{% extends 'unfold/layouts/unauthenticated.html' %}
+{% load i18n static %}
+
+
+{% block extrastyle %}
+    {{ block.super }}
+<!--    {{ form.media }}-->
+    <style>
+        .submit-row {
+            margin-top: 20px;
+            text-align: center;
+            padding: 10px;}
+
+        .submit-row input[type="submit"].default {
+                background-color: #417690;
+                color: white;
+                border: none;
+                padding: 10px 30px;
+                border-radius: 5px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background 0.3s;
+                text-transform: uppercase;
+            }
+        .submit-row input[type="submit"].default:hover {
+                background-color: #205067; /* Màu đậm hơn khi hover */
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<body class="h-screen font-sans bg-gray-50">
+        <div class="w-full lg:w-1/1 flex flex-col justify-center items-center p-8 bg-white overflow-y-auto">
+
+            <div class="w-full max-w-md">
+                <div class="text-center mb-8">
+                    <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-12 mx-auto mb-2" onerror="this.style.display='none'">
+                    <h2 class="text-2xl font-bold text-gray-800">Chào mừng trở lại!</h2>
+                </div>
+
+                <div class="flex bg-gray-100 p-1 rounded-lg mb-8">
+                    <button onclick="switchTab('login')" id="tab-login" class="w-1/2 py-2 rounded-md text-sm font-medium transition-all bg-white shadow text-gray-800">
+                        Đăng nhập
+                    </button>
+                    <button onclick="switchTab('register')" id="tab-register" class="w-1/2 py-2 rounded-md text-sm font-medium transition-all text-gray-500 hover:text-gray-700">
+                        Đăng ký
+                    </button>
+                </div>
+
+                <div id="login-form-container" class="fade-in">
+                    <form method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        {{form.as_p}}
+                        <div class="submit-row">
+                            <input type="submit" class="default" value="Login"> </input>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="register-form-container" class="hidden fade-in">
+                    <form method="post" action="{% url 'register' %}">
+                        {% csrf_token %}
+                        {{form.as_p}}
+
+                        <p class="required">
+                            <label for="id_password" class="required">re_password:</label>
+                            <input type="password" name="re_password" autocomplete="current-password" class="border border-base-200 bg-white font-medium min-w-20 placeholder-base-400 rounded-default shadow-xs text-font-default-light text-sm focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 group-[.errors]:border-red-600 focus:group-[.errors]:outline-red-600 dark:bg-base-900 dark:border-base-700 dark:text-font-default-dark dark:group-[.errors]:border-red-500 dark:focus:group-[.errors]:outline-red-500 dark:scheme-dark group-[.primary]:border-transparent disabled:!bg-base-50 dark:disabled:!bg-base-800 px-3 py-2 w-full" required="" id="id_password">
+
+                        </p>
+
+                        <div class="submit-row">
+                            <input type="submit" value="Register" class="default"></input>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!--        <h1>-->
+<!--            {{ request.resolver_match.view_name }}-->
+<!--        </h1>-->
+
+
+    <script>
+        function switchTab(tab) {
+            const loginForm = document.getElementById('login-form-container');
+            const registerForm = document.getElementById('register-form-container');
+            const loginTab = document.getElementById('tab-login');
+            const registerTab = document.getElementById('tab-register');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+
+                // Style active tab
+                loginTab.classList.add('bg-white', 'shadow', 'text-gray-800');
+                loginTab.classList.remove('text-gray-500');
+
+                registerTab.classList.remove('bg-white', 'shadow', 'text-gray-800');
+                registerTab.classList.add('text-gray-500');
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+
+                // Style active tab
+                registerTab.classList.add('bg-white', 'shadow', 'text-gray-800');
+                registerTab.classList.remove('text-gray-500');
+
+                loginTab.classList.remove('bg-white', 'shadow', 'text-gray-800');
+                loginTab.classList.add('text-gray-500');
+            }
+        }
+    </script>
+</body>
+</html>
+
+{% endblock %}

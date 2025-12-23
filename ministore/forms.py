@@ -16,8 +16,6 @@ class Usergisiger(forms.ModelForm):
         }
 
 
-
-
 # basic form for user
 class UserUpdateForm(forms.ModelForm):
     class Meta:
@@ -29,6 +27,7 @@ class UserUpdateForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
 
 # Form 2:profile
 class ProfileUpdateForm(forms.ModelForm):
@@ -86,4 +85,57 @@ class FormTest(forms.ModelForm):
         fields = ['username', 'first_name', "last_name", "email", "password"]
     def __str__(self):
         return "form test"
+
+
+# --- New: Staff registration form used from admin login page ---
+class StaffRegistrationForm(forms.ModelForm):
+    password1 = forms.CharField(label='Mật khẩu', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    password2 = forms.CharField(label='Xác nhận mật khẩu', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    registration_key = forms.CharField(label='Mã đăng ký', required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise ValidationError("Tên đăng nhập đã tồn tại")
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("Email đã được sử dụng")
+        return email
+
+    def clean(self):
+        cleaned = super().clean()
+        p1 = cleaned.get('password1')
+        p2 = cleaned.get('password2')
+        if p1 and p2 and p1 != p2:
+            raise ValidationError({'password2': "Mật khẩu không khớp"})
+        # validate password strength
+        if p1:
+            try:
+                validate_password(p1)
+            except ValidationError as e:
+                raise ValidationError({'password1': e.messages})
+        return cleaned
+
+    def save(self, commit=True, make_staff=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password1'])
+        # staff account only (no superuser)
+        if make_staff:
+            user.is_staff = True
+            user.is_active = True
+            user.is_superuser = False
+        if commit:
+            user.save()
+        return user
 

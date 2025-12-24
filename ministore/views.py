@@ -246,7 +246,7 @@ def login_view(request):
         # user is None: đăng nhập thất bại
         else:
             messages.error(request, "Sai tài khoản hoặc mật khẩu!")
-            return render(request, 'register.html', {'active_tab': 'login'})
+            return render(request, 'login/register.html', {'active_tab': 'login'})
     
     # {'active_tab': 'login'}: ở bên html hứng nó bằng biến active_tab.
     return render(request, 'login/register.html', {'active_tab': 'login'})
